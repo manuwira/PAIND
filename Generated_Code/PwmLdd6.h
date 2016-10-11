@@ -7,7 +7,7 @@
 **     Version     : Component 01.014, Driver 01.03, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-06, 09:38, # CodeGen: 31
+**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
 **     Abstract    :
 **          This component implements a pulse-width modulation generator
 **          that generates signal with variable duty and fixed cycle.

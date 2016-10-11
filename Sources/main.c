@@ -88,10 +88,6 @@
 #include "TRIG.h"
 #include "TU3.h"
 #include "TMOUT1.h"
-#include "SD1.h"
-#include "SS1.h"
-#include "CD1.h"
-#include "WP1.h"
 #include "SM2.h"
 /* Including shared modules, which are used for whole project */
 #include "PE_Types.h"

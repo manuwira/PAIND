@@ -56,10 +56,8 @@ Generated_Code/ANALOG_IN.o: ../Generated_Code/ANALOG_IN.c \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Bein_R.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Pwm6.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/PwmLdd6.h \
- /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TU3.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Pwm6.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/PwmLdd6.h \
- /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TU3.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/FRTOS1.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SYS1.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/RTT1.h \
@@ -83,11 +81,11 @@ Generated_Code/ANALOG_IN.o: ../Generated_Code/ANALOG_IN.c \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SYS1.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/RTT1.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CLS1.h \
- /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BL2.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Buzzer.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd1.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Static_Code/PDD/GPIO_PDD.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd1.h \
- /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BL1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Switch_A.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd3.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd3.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/ROT.h \
@@ -109,6 +107,28 @@ Generated_Code/ANALOG_IN.o: ../Generated_Code/ANALOG_IN.c \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/AdcLdd1.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Static_Code/PDD/ADC_PDD.h \
  /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/AdcLdd1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Switch_B.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd6.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd6.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/RF1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CE1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd7.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CSN1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd8.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SM1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SMasterLdd1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Static_Code/PDD/SPI_PDD.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CE1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd7.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CSN1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd8.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SM1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SMasterLdd1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TRIG.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TU3.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TMOUT1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CS1.h \
+ /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SM2.h \
  ../Generated_Code/ANALOG_IN.h
 
 /Users/manuelwittmer/workspace.kds/PAIND/Sources/Events.h:
@@ -225,13 +245,9 @@ Generated_Code/ANALOG_IN.o: ../Generated_Code/ANALOG_IN.c \
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/PwmLdd6.h:
 
-/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TU3.h:
-
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Pwm6.h:
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/PwmLdd6.h:
-
-/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TU3.h:
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/FRTOS1.h:
 
@@ -279,7 +295,7 @@ Generated_Code/ANALOG_IN.o: ../Generated_Code/ANALOG_IN.c \
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CLS1.h:
 
-/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BL2.h:
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Buzzer.h:
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd1.h:
 
@@ -287,7 +303,7 @@ Generated_Code/ANALOG_IN.o: ../Generated_Code/ANALOG_IN.c \
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd1.h:
 
-/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BL1.h:
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Switch_A.h:
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd3.h:
 
@@ -330,5 +346,49 @@ Generated_Code/ANALOG_IN.o: ../Generated_Code/ANALOG_IN.c \
 /Users/manuelwittmer/workspace.kds/PAIND/Static_Code/PDD/ADC_PDD.h:
 
 /Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/AdcLdd1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/Switch_B.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd6.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd6.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/RF1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CE1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd7.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CSN1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd8.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SM1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SMasterLdd1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Static_Code/PDD/SPI_PDD.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CE1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd7.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CSN1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/BitIoLdd8.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SM1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SMasterLdd1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TRIG.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TU3.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/TMOUT1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/CS1.h:
+
+/Users/manuelwittmer/workspace.kds/PAIND/Generated_Code/SM2.h:
 
 ../Generated_Code/ANALOG_IN.h:

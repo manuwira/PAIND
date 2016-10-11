@@ -91,10 +91,6 @@
 #include "TRIG.h"
 #include "TU3.h"
 #include "TMOUT1.h"
-#include "SD1.h"
-#include "SS1.h"
-#include "CD1.h"
-#include "WP1.h"
 #include "SM2.h"
 
 #ifdef __cplusplus
@@ -302,6 +298,25 @@ void TU3_OnChannel0(LDD_TUserData *UserDataPtr);
 */
 /* ===================================================================*/
 void SM2_OnBlockSent(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
+**     Event       :  SM2_OnBlockReceived (module Events)
+**
+**     Component   :  SM2 [SPIMaster_LDD]
+*/
+/*!
+**     @brief
+**         This event is called when the requested number of data is
+**         moved to the input buffer. This method is available only if
+**         the ReceiveBlock method is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. The pointer is passed
+**                           as the parameter of Init method. 
+*/
+/* ===================================================================*/
+void SM2_OnBlockReceived(LDD_TUserData *UserDataPtr);
 
 /* END Events */
 

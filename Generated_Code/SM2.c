@@ -7,7 +7,7 @@
 **     Version     : Component 01.111, Driver 01.02, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-06, 10:54, # CodeGen: 34
+**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
 **     Abstract    :
 **         This component "SPIMaster_LDD" implements MASTER part of synchronous
 **         serial master-slave communication.
@@ -70,7 +70,6 @@
 **            Clock configuration 7                        : This component disabled
 **     Contents    :
 **         Init         - LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
-**         Deinit       - void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr);
 **         SendBlock    - LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
 **         ReceiveBlock - LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
 **
@@ -121,7 +120,6 @@
 /*lint -save  -e926 -e927 -e928 -e929 Disable MISRA rule (11.4) checking. */
 
 #include "Events.h"
-#include "SD1.h"
 #include "SM2.h"
 #include "FreeRTOS.h" /* FreeRTOS interface */
 
@@ -246,35 +244,6 @@ LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr)
   /* Registration of the device structure */
   PE_LDD_RegisterDeviceStructure(PE_LDD_COMPONENT_SM2_ID,DeviceDataPrv);
   return ((LDD_TDeviceData *)DeviceDataPrv); /* Return pointer to the data data structure */
-}
-
-/*
-** ===================================================================
-**     Method      :  SM2_Deinit (component SPIMaster_LDD)
-*/
-/*!
-**     @brief
-**         This method deinitializes the device. It switches off the
-**         device, frees the device data structure memory, interrupts
-**         vectors, etc.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-*/
-/* ===================================================================*/
-void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr)
-{
-  (void)DeviceDataPtr;                 /* Parameter is not used, suppress unused argument warning */
-  /* SPI1_C1: SPIE=0,SPE=0,SPTIE=0,MSTR=0,CPOL=0,CPHA=1,SSOE=0,LSBFE=0 */
-  SPI1_C1 = SPI_C1_CPHA_MASK;          /* Disable device */
-  /* Restoring the interrupt vector */
-  /* {FreeRTOS RTOS Adapter} Restore interrupt vector: IVT is static, no code is generated */
-  /* Unregistration of the device structure */
-  PE_LDD_UnregisterDeviceStructure(PE_LDD_COMPONENT_SM2_ID);
-  /* Deallocation of the device structure */
-  /* {FreeRTOS RTOS Adapter} Driver memory deallocation: Dynamic allocation is simulated, no deallocation code is generated */
-  /* SIM_SCGC4: SPI1=0 */
-  SIM_SCGC4 &= (uint32_t)~(uint32_t)(SIM_SCGC4_SPI1_MASK);
 }
 
 /*

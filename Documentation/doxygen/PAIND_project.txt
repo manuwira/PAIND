@@ -44,9 +44,6 @@
 - \subpage TRIG
 - \subpage TU3
 - \subpage SM2
-- \subpage SS1
-- \subpage CD1
-- \subpage WP1
 
 */
 

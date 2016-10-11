@@ -7,7 +7,7 @@
 **     Version     : Component 02.347, Driver 01.01, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-05, 20:18, # CodeGen: 28
+**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
 **     Abstract    :
 **         This component "SynchroMaster" implements MASTER part of synchronous
 **         serial master-slave communication.

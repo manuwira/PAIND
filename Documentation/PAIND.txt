@@ -880,33 +880,12 @@ Module "TMOUT1"    (component Timeout)
                 to zero.
    - TMOUT1_Init -Initialization of the driver
 
-Module "SD1"       (component SD_Card)
-   - SD1_Init -Initializes the driver
-   - SD1_Deinit -Driver deinitialization routine.
-   - SD1_Activate -If multiple devices are used on the same SPI bus, then the device needs to be activated. That way, the 
-                different SPI protocol is selected.
-   - SD1_Deactivate -Removes/deactivates the card from the bus
-   - SD1_isWriteProtected -Determines if the card is write protected. Note that this is an indicator only, as it is still 
-                possible to write to the card even if the write protection is set on the card!
-   - SD1_CardPresent -Returns true in case a card is present. If there is no card detection pin, then this routine will always 
-                return true.
-   - SD1_WaitReady -Wait until the card is ready
-   - SD1_ReceiveDataBlock -Retrieve a data block from the device
-   - SD1_SendDataBlock -Send a data block to the device
-   - SD1_SendCmd -Sends a command to the device and returns the response
-   - SD1_SetSlowMode -Switches to slow mode SPI communication speed.
-   - SD1_SetFastMode -Switches to fast mode SPI communication speed.
-   - SD1_InitCommChannel -Method to initialize the communication channel. This is needed if the bus to the SD card is shared 
-                with other devices.
-
 Module "SM2"       (component SPIMaster_LDD)
    - SM2_Init -Initializes the device. Allocates memory for the device data structure, allocates interrupt vectors and sets 
                 interrupt priority, sets pin routing, sets timing, etc.   If the "Enable in init. code" is set to "yes" value 
                 then the device is also enabled(see the description of the Enable() method). In this case the Enable() method 
                 is not necessary and needn't to be generated.    This method can be called only once. Before the second call of 
                 Init() the Deinit() must be called first.
-   - SM2_Deinit -This method deinitializes the device. It switches off the device, frees the device data structure memory, 
-                interrupts vectors, etc.
    - SM2_SendBlock -Sends a block of characters. The method returns ERR_BUSY when the previous block transmission is not 
                 completed. The method <CancelBlockTransmission> can be used to cancel a transmit operation. This method 
                 finishes immediately after calling it - it doesn't wait the end of data transmission. Use event <OnBlockSent> 

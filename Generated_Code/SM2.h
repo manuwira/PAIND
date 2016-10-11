@@ -7,7 +7,7 @@
 **     Version     : Component 01.111, Driver 01.02, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-06, 10:54, # CodeGen: 34
+**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
 **     Abstract    :
 **         This component "SPIMaster_LDD" implements MASTER part of synchronous
 **         serial master-slave communication.
@@ -70,7 +70,6 @@
 **            Clock configuration 7                        : This component disabled
 **     Contents    :
 **         Init         - LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
-**         Deinit       - void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr);
 **         SendBlock    - LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
 **         ReceiveBlock - LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
 **
@@ -142,7 +141,6 @@ extern "C" {
   
 /* Methods configuration constants - generated for all enabled component's methods */
 #define SM2_Init_METHOD_ENABLED        /*!< Init method of the component SM2 is enabled (generated) */
-#define SM2_Deinit_METHOD_ENABLED      /*!< Deinit method of the component SM2 is enabled (generated) */
 #define SM2_SendBlock_METHOD_ENABLED   /*!< SendBlock method of the component SM2 is enabled (generated) */
 #define SM2_ReceiveBlock_METHOD_ENABLED /*!< ReceiveBlock method of the component SM2 is enabled (generated) */
 
@@ -177,22 +175,6 @@ extern "C" {
 */
 /* ===================================================================*/
 LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
-
-/*
-** ===================================================================
-**     Method      :  SM2_Deinit (component SPIMaster_LDD)
-*/
-/*!
-**     @brief
-**         This method deinitializes the device. It switches off the
-**         device, frees the device data structure memory, interrupts
-**         vectors, etc.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-*/
-/* ===================================================================*/
-void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr);
 
 /*
 ** ===================================================================

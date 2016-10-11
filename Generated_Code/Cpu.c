@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : KL25P80M48SF0RM, Rev.3, Sep 2012
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-06, 10:54, # CodeGen: 34
+**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
 **     Abstract    :
 **
 **     Settings    :
@@ -301,10 +301,6 @@
 #include "TRIG.h"
 #include "TU3.h"
 #include "TMOUT1.h"
-#include "SD1.h"
-#include "SS1.h"
-#include "CD1.h"
-#include "WP1.h"
 #include "SM2.h"
 #include "PE_Types.h"
 #include "PE_Error.h"
@@ -558,13 +554,6 @@ void PE_low_level_init(void)
   /* ### nRF24L01 "RF1" init code ... */
   /* ### Timeout "TMOUT1" init code ... */
   TMOUT1_Init();
-  /* ### BitIO_LDD "SS1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
-  (void)SS1_Init(NULL);
-  /* ### BitIO_LDD "CD1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
-  (void)CD1_Init(NULL);
-  /* ### BitIO_LDD "WP1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
-  (void)WP1_Init(NULL);
-  /* ### SD_Card "SD1" init code ... */
 }
   /* Flash configuration field */
   __attribute__ ((section (".cfmconfig"))) const uint8_t _cfm[0x10] = {
