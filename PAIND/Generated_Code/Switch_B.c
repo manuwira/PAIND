@@ -7,7 +7,7 @@
 **     Version     : Component 02.086, Driver 01.00, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-17, 19:59, # CodeGen: 61
 **     Abstract    :
 **         This component "BitIO" implements an one-bit input/output.
 **         It uses one bit/pin of a port.
@@ -15,7 +15,7 @@
 **         (if supported by target language and compiler).
 **     Settings    :
 **          Component name                                 : Switch_B
-**          Pin for I/O                                    : PTE0/UART1_TX/RTC_CLKOUT/CMP0_OUT/I2C1_SDA
+**          Pin for I/O                                    : PTC16
 **          Pin signal                                     : 
 **          BitIO_LDD                                      : BitIO_LDD
 **          Direction                                      : Input/Output

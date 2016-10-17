@@ -6,7 +6,7 @@
 **     Version     : Component 01.025, Driver 01.04, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
+**     Date/Time   : 2016-10-13, 10:46, # CodeGen: 58
 **     Abstract    :
 **
 **     Settings    :
@@ -78,7 +78,6 @@
 #include "Bein_L.h"
 #include "Pwm5.h"
 #include "PwmLdd5.h"
-#include "TU2.h"
 #include "Bein_R.h"
 #include "Pwm6.h"
 #include "PwmLdd6.h"
@@ -117,9 +116,17 @@
 #include "SM1.h"
 #include "SMasterLdd1.h"
 #include "TRIG.h"
-#include "TU3.h"
 #include "TMOUT1.h"
+#include "SD1.h"
+#include "SS1.h"
+#include "CD1.h"
+#include "WP1.h"
+#include "FAT1.h"
+#include "TmDt1.h"
+#include "TimeDateLdd1.h"
+#include "TU2.h"
 #include "SM2.h"
+#include "TU3.h"
 
 
 /*

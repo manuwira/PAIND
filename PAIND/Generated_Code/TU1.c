@@ -7,7 +7,7 @@
 **     Version     : Component 01.164, Driver 01.11, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
 **     Abstract    :
 **          This TimerUnit component provides a low level API for unified hardware access across
 **          various timer devices using the Prescaler-Counter-Compare-Capture timer structure.
@@ -24,7 +24,7 @@
 **            Period device                                : TPM0_MOD
 **            Period                                       : 20 ms
 **            Interrupt                                    : Disabled
-**          Channel list                                   : 4
+**          Channel list                                   : 6
 **            Channel 0                                    : 
 **              Mode                                       : Compare
 **                Compare                                  : TPM0_C0V
@@ -65,6 +65,26 @@
 **                  Output on overrun                      : Clear
 **                  Initial state                          : Low
 **                  Output pin                             : PTD4/LLWU_P14/SPI1_PCS0/UART2_RX/TPM0_CH4
+**                  Output pin signal                      : 
+**                Interrupt                                : Disabled
+**            Channel 4                                    : 
+**              Mode                                       : Compare
+**                Compare                                  : TPM0_C1V
+**                Offset                                   : 1.5 ms
+**                Output on compare                        : Set
+**                  Output on overrun                      : Clear
+**                  Initial state                          : Low
+**                  Output pin                             : ADC0_SE11/TSI0_CH15/PTC2/I2C1_SDA/TPM0_CH1
+**                  Output pin signal                      : 
+**                Interrupt                                : Disabled
+**            Channel 5                                    : 
+**              Mode                                       : Compare
+**                Compare                                  : TPM0_C5V
+**                Offset                                   : 1.5 ms
+**                Output on compare                        : Set
+**                  Output on overrun                      : Clear
+**                  Initial state                          : Low
+**                  Output pin                             : CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5
 **                  Output pin signal                      : 
 **                Interrupt                                : Disabled
 **          Initialization                                 : 
@@ -155,10 +175,10 @@ extern "C" {
 #endif 
 
 /* List of channels used by component */
-static const uint8_t ChannelDevice[TU1_NUMBER_OF_CHANNELS] = {0x00U,0x03U,0x02U,0x04U};
+static const uint8_t ChannelDevice[TU1_NUMBER_OF_CHANNELS] = {0x00U,0x03U,0x02U,0x04U,0x01U,0x05U};
 
 /* Table of channels mode / 0 - compare mode, 1 - capture mode */
-static const uint8_t ChannelMode[TU1_NUMBER_OF_CHANNELS] = {0x00U,0x00U,0x00U,0x00U};
+static const uint8_t ChannelMode[TU1_NUMBER_OF_CHANNELS] = {0x00U,0x00U,0x00U,0x00U,0x00U,0x00U};
 
 
 typedef struct {
@@ -176,8 +196,8 @@ static TU1_TDeviceData DeviceDataPrv__DEFAULT_RTOS_ALLOC;
 static TU1_TDeviceDataPtr INT_TPM0__BAREBOARD_RTOS_ISRPARAM;
 
 #define AVAILABLE_EVENTS_MASK (LDD_TEventMask)(LDD_TIMERUNIT_ON_CHANNEL_0)
-#define AVAILABLE_PIN_MASK (LDD_TPinMask)(TU1_CHANNEL_0_PIN | TU1_CHANNEL_1_PIN | TU1_CHANNEL_2_PIN | TU1_CHANNEL_3_PIN)
-#define LAST_CHANNEL 0x03U
+#define AVAILABLE_PIN_MASK (LDD_TPinMask)(TU1_CHANNEL_0_PIN | TU1_CHANNEL_1_PIN | TU1_CHANNEL_2_PIN | TU1_CHANNEL_3_PIN | TU1_CHANNEL_4_PIN | TU1_CHANNEL_5_PIN)
+#define LAST_CHANNEL 0x05U
 
 /* Internal method prototypes */
 /*
@@ -264,6 +284,14 @@ LDD_TDeviceData* TU1_Init(LDD_TUserData *UserDataPtr)
   TPM0_C4SC = (TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK); /* Set up channel status and control register */
   /* TPM0_C4V: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,VAL=0x0F5C */
   TPM0_C4V = TPM_CnV_VAL(0x0F5C);      /* Set up channel value register */
+  /* TPM0_C1SC: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,CHF=0,CHIE=0,MSB=1,MSA=0,ELSB=1,ELSA=1,??=0,DMA=0 */
+  TPM0_C1SC = (TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK); /* Set up channel status and control register */
+  /* TPM0_C1V: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,VAL=0x0F5C */
+  TPM0_C1V = TPM_CnV_VAL(0x0F5C);      /* Set up channel value register */
+  /* TPM0_C5SC: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,CHF=0,CHIE=0,MSB=1,MSA=0,ELSB=1,ELSA=1,??=0,DMA=0 */
+  TPM0_C5SC = (TPM_CnSC_MSB_MASK | TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK); /* Set up channel status and control register */
+  /* TPM0_C5V: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,VAL=0x0F5C */
+  TPM0_C5V = TPM_CnV_VAL(0x0F5C);      /* Set up channel value register */
   /* PORTD_PCR0: ISF=0,MUX=4 */
   PORTD_PCR0 = (uint32_t)((PORTD_PCR0 & (uint32_t)~(uint32_t)(
                 PORT_PCR_ISF_MASK |
@@ -291,6 +319,20 @@ LDD_TDeviceData* TU1_Init(LDD_TUserData *UserDataPtr)
                 PORT_PCR_MUX(0x03)
                )) | (uint32_t)(
                 PORT_PCR_MUX(0x04)
+               ));
+  /* PORTC_PCR2: ISF=0,MUX=4 */
+  PORTC_PCR2 = (uint32_t)((PORTC_PCR2 & (uint32_t)~(uint32_t)(
+                PORT_PCR_ISF_MASK |
+                PORT_PCR_MUX(0x03)
+               )) | (uint32_t)(
+                PORT_PCR_MUX(0x04)
+               ));
+  /* PORTC_PCR9: ISF=0,MUX=3 */
+  PORTC_PCR9 = (uint32_t)((PORTC_PCR9 & (uint32_t)~(uint32_t)(
+                PORT_PCR_ISF_MASK |
+                PORT_PCR_MUX(0x04)
+               )) | (uint32_t)(
+                PORT_PCR_MUX(0x03)
                ));
   DeviceDataPrv->EnEvents = 0x01U;     /* Enable selected events */
   DeviceDataPrv->Source = TPM_PDD_SYSTEM; /* Store clock source */

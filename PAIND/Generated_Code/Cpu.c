@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : KL25P80M48SF0RM, Rev.3, Sep 2012
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
+**     Date/Time   : 2016-10-13, 10:46, # CodeGen: 58
 **     Abstract    :
 **
 **     Settings    :
@@ -260,7 +260,6 @@
 #include "Bein_L.h"
 #include "Pwm5.h"
 #include "PwmLdd5.h"
-#include "TU2.h"
 #include "Bein_R.h"
 #include "Pwm6.h"
 #include "PwmLdd6.h"
@@ -299,9 +298,17 @@
 #include "SM1.h"
 #include "SMasterLdd1.h"
 #include "TRIG.h"
-#include "TU3.h"
 #include "TMOUT1.h"
+#include "SD1.h"
+#include "SS1.h"
+#include "CD1.h"
+#include "WP1.h"
+#include "FAT1.h"
+#include "TmDt1.h"
+#include "TimeDateLdd1.h"
+#include "TU2.h"
 #include "SM2.h"
+#include "TU3.h"
 #include "PE_Types.h"
 #include "PE_Error.h"
 #include "PE_Const.h"
@@ -373,6 +380,8 @@ void __init_hardware(void)
                SIM_SCGC5_PORTC_MASK |
                SIM_SCGC5_PORTB_MASK |
                SIM_SCGC5_PORTA_MASK;   /* Enable clock gate for ports to enable pin routing */
+  /* SIM_SCGC5: LPTMR=1 */
+  SIM_SCGC5 |= SIM_SCGC5_LPTMR_MASK;
   if ((PMC_REGSC & PMC_REGSC_ACKISO_MASK) != 0x0U) {
     /* PMC_REGSC: ACKISO=1 */
     PMC_REGSC |= PMC_REGSC_ACKISO_MASK; /* Release IO pads after wakeup from VLLS mode. */
@@ -554,6 +563,18 @@ void PE_low_level_init(void)
   /* ### nRF24L01 "RF1" init code ... */
   /* ### Timeout "TMOUT1" init code ... */
   TMOUT1_Init();
+  /* ### SPIMaster_LDD "SM2" component auto initializatation. Auto initialization feature can be disabled by component's property "Auto initialization". */
+  (void)SM2_Init(NULL);
+  /* ### BitIO_LDD "SS1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)SS1_Init(NULL);
+  /* ### BitIO_LDD "CD1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)CD1_Init(NULL);
+  /* ### BitIO_LDD "WP1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)WP1_Init(NULL);
+  /* ### SD_Card "SD1" init code ... */
+  /* ### TimeDate_LDD "TimeDateLdd1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)TimeDateLdd1_Init(NULL);
+  /* ### FAT_FileSystem "FAT1" init code ... */
 }
   /* Flash configuration field */
   __attribute__ ((section (".cfmconfig"))) const uint8_t _cfm[0x10] = {

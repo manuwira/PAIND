@@ -89,9 +89,16 @@
 #include "SM1.h"
 #include "SMasterLdd1.h"
 #include "TRIG.h"
-#include "TU3.h"
 #include "TMOUT1.h"
+#include "SD1.h"
+#include "SS1.h"
+#include "CD1.h"
+#include "WP1.h"
 #include "SM2.h"
+#include "TU3.h"
+#include "FAT1.h"
+#include "TmDt1.h"
+#include "TimeDateLdd1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -240,6 +247,25 @@ void TU1_OnChannel0(LDD_TUserData *UserDataPtr);
 
 /*
 ** ===================================================================
+**     Event       :  SM2_OnBlockSent (module Events)
+**
+**     Component   :  SM2 [SPIMaster_LDD]
+*/
+/*!
+**     @brief
+**         This event is called after the last character from the
+**         output buffer is moved to the transmitter. This event is
+**         available only if the SendBlock method is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. The pointer is passed
+**                           as the parameter of Init method. 
+*/
+/* ===================================================================*/
+void SM2_OnBlockSent(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
 **     Event       :  TU3_OnCounterRestart (module Events)
 **
 **     Component   :  TU3 [TimerUnit_LDD]
@@ -279,44 +305,6 @@ void TU3_OnCounterRestart(LDD_TUserData *UserDataPtr);
 */
 /* ===================================================================*/
 void TU3_OnChannel0(LDD_TUserData *UserDataPtr);
-
-/*
-** ===================================================================
-**     Event       :  SM2_OnBlockSent (module Events)
-**
-**     Component   :  SM2 [SPIMaster_LDD]
-*/
-/*!
-**     @brief
-**         This event is called after the last character from the
-**         output buffer is moved to the transmitter. This event is
-**         available only if the SendBlock method is enabled.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. The pointer is passed
-**                           as the parameter of Init method. 
-*/
-/* ===================================================================*/
-void SM2_OnBlockSent(LDD_TUserData *UserDataPtr);
-
-/*
-** ===================================================================
-**     Event       :  SM2_OnBlockReceived (module Events)
-**
-**     Component   :  SM2 [SPIMaster_LDD]
-*/
-/*!
-**     @brief
-**         This event is called when the requested number of data is
-**         moved to the input buffer. This method is available only if
-**         the ReceiveBlock method is enabled.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. The pointer is passed
-**                           as the parameter of Init method. 
-*/
-/* ===================================================================*/
-void SM2_OnBlockReceived(LDD_TUserData *UserDataPtr);
 
 /* END Events */
 

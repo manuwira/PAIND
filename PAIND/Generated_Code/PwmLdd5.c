@@ -7,7 +7,7 @@
 **     Version     : Component 01.014, Driver 01.03, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
 **     Abstract    :
 **          This component implements a pulse-width modulation generator
 **          that generates signal with variable duty and fixed cycle.
@@ -16,11 +16,11 @@
 **          component.
 **     Settings    :
 **          Component name                                 : PwmLdd5
-**          Period device                                  : TPM1_MOD
-**          Duty device                                    : TPM1_C0V
-**          Output pin                                     : ADC0_DP0/ADC0_SE0/PTE20/TPM1_CH0/UART0_TX
+**          Period device                                  : TPM0_MOD
+**          Duty device                                    : TPM0_C1V
+**          Output pin                                     : ADC0_SE11/TSI0_CH15/PTC2/I2C1_SDA/TPM0_CH1
 **          Output pin signal                              : 
-**          Counter                                        : TPM1_CNT
+**          Counter                                        : TPM0_CNT
 **          Interrupt service/event                        : Disabled
 **          Period                                         : 20 ms
 **          Starting pulse width                           : 1.5 ms
@@ -40,7 +40,7 @@
 **            Clock configuration 6                        : This component disabled
 **            Clock configuration 7                        : This component disabled
 **          Referenced components                          : 
-**            Linked component                             : TU2
+**            Linked component                             : TU1
 **     Contents    :
 **         Init       - LDD_TDeviceData* PwmLdd5_Init(LDD_TUserData *UserDataPtr);
 **         Enable     - LDD_TError PwmLdd5_Enable(LDD_TDeviceData *DeviceDataPtr);
@@ -116,7 +116,7 @@ typedef PwmLdd5_TDeviceData *PwmLdd5_TDeviceDataPtr; /* Pointer to the device da
 /* {FreeRTOS RTOS Adapter} Static object used for simulation of dynamic driver memory allocation */
 static PwmLdd5_TDeviceData DeviceDataPrv__DEFAULT_RTOS_ALLOC;
 
-#define CHANNEL 0x00U
+#define CHANNEL 0x04U
 /* Internal method prototypes */
 static void SetRatio(LDD_TDeviceData *DeviceDataPtr);
 /*
@@ -154,7 +154,7 @@ LDD_TDeviceData* PwmLdd5_Init(LDD_TUserData *UserDataPtr)
   DeviceDataPrv->RatioStore = 0x1333U; /* Ratio after initialization */
   /* Registration of the device structure */
   PE_LDD_RegisterDeviceStructure(PE_LDD_COMPONENT_PwmLdd5_ID,DeviceDataPrv);
-  DeviceDataPrv->LinkedDeviceDataPtr = TU2_Init((LDD_TUserData *)NULL);
+  DeviceDataPrv->LinkedDeviceDataPtr = TU1_Init((LDD_TUserData *)NULL);
   if (DeviceDataPrv->LinkedDeviceDataPtr == NULL) { /* Is initialization of TimerUnit unsuccessful? */
     /* Unregistration of the device structure */
     PE_LDD_UnregisterDeviceStructure(PE_LDD_COMPONENT_PwmLdd5_ID);
@@ -189,7 +189,7 @@ LDD_TError PwmLdd5_Enable(LDD_TDeviceData *DeviceDataPtr)
 
   if (!DeviceDataPrv->EnUser) {        /* Is the device disabled by user? */
     DeviceDataPrv->EnUser = TRUE;      /* If yes then set the flag "device enabled" */
-    (void)TU2_Enable(DeviceDataPrv->LinkedDeviceDataPtr); /* Enable TimerUnit */
+    (void)TU1_Enable(DeviceDataPrv->LinkedDeviceDataPtr); /* Enable TimerUnit */
   }
   return ERR_OK;
 }
@@ -218,8 +218,8 @@ LDD_TError PwmLdd5_Disable(LDD_TDeviceData *DeviceDataPtr)
 
   if (DeviceDataPrv->EnUser) {         /* Is the device enabled by user? */
     DeviceDataPrv->EnUser = FALSE;     /* If yes then set the flag "device enabled" */
-   (void)TU2_Disable(DeviceDataPrv->LinkedDeviceDataPtr); /* Disable TimerUnit component */
-   (void)TU2_ResetCounter(DeviceDataPrv->LinkedDeviceDataPtr); /* Reset counter */
+   (void)TU1_Disable(DeviceDataPrv->LinkedDeviceDataPtr); /* Disable TimerUnit component */
+   (void)TU1_ResetCounter(DeviceDataPrv->LinkedDeviceDataPtr); /* Reset counter */
   }
   return ERR_OK;
 }
@@ -367,14 +367,14 @@ static void SetRatio(LDD_TDeviceData *DeviceDataPtr)
   uint16_t Period;
   uint16_t Duty;
 
-  (void)TU2_GetPeriodTicks(DeviceDataPrv->LinkedDeviceDataPtr, &Period);
+  (void)TU1_GetPeriodTicks(DeviceDataPrv->LinkedDeviceDataPtr, &Period);
   if (Period == 0U) {
     Duty = DeviceDataPrv->RatioStore;
   }
   else {
     Duty = (uint16_t)((((uint32_t)(Period) * DeviceDataPrv->RatioStore) + 0x8000) >> 0x10);
   }
-  (void)TU2_SetOffsetTicks(DeviceDataPrv->LinkedDeviceDataPtr, CHANNEL, Duty);
+  (void)TU1_SetOffsetTicks(DeviceDataPrv->LinkedDeviceDataPtr, CHANNEL, Duty);
 }
 /* END PwmLdd5. */
 

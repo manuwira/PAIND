@@ -7,7 +7,7 @@
 **     Version     : Component 02.347, Driver 01.01, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-13, 10:50, # CodeGen: 59
 **     Abstract    :
 **         This component "SynchroMaster" implements MASTER part of synchronous
 **         serial master-slave communication.
@@ -25,13 +25,13 @@
 **          Settings                                       : 
 **            Width                                        : 8 bits
 **            Input pin                                    : Enabled
-**              Pin                                        : PTD3/SPI0_MISO/UART2_TX/TPM0_CH3/SPI0_MOSI
+**              Pin                                        : PTA17/SPI0_MISO/SPI0_MOSI
 **              Pin signal                                 : RF_MISO
 **            Output pin                                   : Enabled
 **              Pin                                        : CMP0_IN0/PTC6/LLWU_P10/SPI0_MOSI/EXTRG_IN/SPI0_MISO
 **              Pin signal                                 : RF_MOSI
 **            Clock pin                                    : 
-**              Pin                                        : ADC0_SE5b/PTD1/SPI0_SCK/TPM0_CH1
+**              Pin                                        : PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/CMP0_OUT
 **              Pin signal                                 : RF_CLK
 **            Slave select pin                             : Disabled
 **            Clock edge                                   : falling edge

@@ -7,7 +7,7 @@
 **     Version     : Component 01.111, Driver 01.02, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
+**     Date/Time   : 2016-10-13, 10:18, # CodeGen: 56
 **     Abstract    :
 **         This component "SPIMaster_LDD" implements MASTER part of synchronous
 **         serial master-slave communication.
@@ -21,21 +21,29 @@
 **            Output interrupt priority                    : medium priority
 **          Settings                                       : 
 **            Input pin                                    : Enabled
-**              Pin                                        : PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL
-**              Pin signal                                 : 
+**              Pin                                        : ADC0_SE7b/PTD6/LLWU_P15/SPI1_MOSI/UART0_RX/SPI1_MISO
+**              Pin signal                                 : SD_MISO
 **            Output pin                                   : Enabled
 **              Pin                                        : PTE3/SPI1_MISO/SPI1_MOSI
-**              Pin signal                                 : 
+**              Pin signal                                 : SD_MOSI
 **            Clock pin                                    : 
-**              Pin                                        : PTE2/SPI1_SCK
-**              Pin signal                                 : 
+**              Pin                                        : PTB11/SPI1_SCK
+**              Pin signal                                 : SD_CLK
 **            Chip select list                             : 1
 **              Chip select 0                              : 
 **                Pin                                      : PTE4/SPI1_PCS0
 **                Pin signal                               : 
 **                Active level                             : Low
-**            Attribute set list                           : 1
+**            Attribute set list                           : 2
 **              Attribute set 0                            : 
+**                Width                                    : 8 bits
+**                MSB first                                : yes
+**                Clock polarity                           : Low
+**                Clock phase                              : Capture on leading edge
+**                Parity                                   : None
+**                Chip select toggling                     : yes
+**                Clock rate index                         : 0
+**              Attribute set 1                            : 
 **                Width                                    : 8 bits
 **                MSB first                                : yes
 **                Clock polarity                           : Low
@@ -54,7 +62,7 @@
 **            Initial chip select                          : 0
 **            Initial attribute set                        : 0
 **            Enabled in init. code                        : yes
-**            Auto initialization                          : no
+**            Auto initialization                          : yes
 **            Event mask                                   : 
 **              OnBlockSent                                : Enabled
 **              OnBlockReceived                            : Enabled
@@ -69,9 +77,11 @@
 **            Clock configuration 6                        : This component disabled
 **            Clock configuration 7                        : This component disabled
 **     Contents    :
-**         Init         - LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
-**         SendBlock    - LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
-**         ReceiveBlock - LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
+**         Init                - LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
+**         Deinit              - void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr);
+**         SendBlock           - LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
+**         ReceiveBlock        - LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
+**         SelectConfiguration - LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t...
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -120,6 +130,7 @@
 /*lint -save  -e926 -e927 -e928 -e929 Disable MISRA rule (11.4) checking. */
 
 #include "Events.h"
+#include "SD1.h"
 #include "SM2.h"
 #include "FreeRTOS.h" /* FreeRTOS interface */
 
@@ -131,6 +142,17 @@ extern "C" {
 
 /* These constants contain pins masks */
 #define SM2_AVAILABLE_PIN_MASK (LDD_SPIMASTER_INPUT_PIN | LDD_SPIMASTER_OUTPUT_PIN | LDD_SPIMASTER_CLK_PIN | LDD_SPIMASTER_CS_0_PIN)
+
+typedef struct {
+  uint8_t Control1;
+  uint8_t Control2;
+  uint8_t BaudRate[1];
+} LDD_SPIMASTER_TConfiguration;
+
+static const LDD_SPIMASTER_TConfiguration ConfigurationSet[SM2_CONFIGURATION_COUNT] = {
+    {0x00U, 0x10U,{0x62U}},
+    {0x00U, 0x10U,{0x62U}}
+};
 
 typedef struct {
   LDD_SPIMASTER_TError ErrFlag;        /* Error flags */
@@ -205,8 +227,8 @@ LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr)
               ));
   /* NVIC_ISER: SETENA|=0x0800 */
   NVIC_ISER |= NVIC_ISER_SETENA(0x0800);
-  /* PORTE_PCR1: ISF=0,MUX=5 */
-  PORTE_PCR1 = (uint32_t)((PORTE_PCR1 & (uint32_t)~(uint32_t)(
+  /* PORTD_PCR6: ISF=0,MUX=5 */
+  PORTD_PCR6 = (uint32_t)((PORTD_PCR6 & (uint32_t)~(uint32_t)(
                 PORT_PCR_ISF_MASK |
                 PORT_PCR_MUX(0x02)
                )) | (uint32_t)(
@@ -219,13 +241,13 @@ LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr)
                )) | (uint32_t)(
                 PORT_PCR_MUX(0x05)
                ));
-  /* PORTE_PCR2: ISF=0,MUX=2 */
-  PORTE_PCR2 = (uint32_t)((PORTE_PCR2 & (uint32_t)~(uint32_t)(
-                PORT_PCR_ISF_MASK |
-                PORT_PCR_MUX(0x05)
-               )) | (uint32_t)(
-                PORT_PCR_MUX(0x02)
-               ));
+  /* PORTB_PCR11: ISF=0,MUX=2 */
+  PORTB_PCR11 = (uint32_t)((PORTB_PCR11 & (uint32_t)~(uint32_t)(
+                 PORT_PCR_ISF_MASK |
+                 PORT_PCR_MUX(0x05)
+                )) | (uint32_t)(
+                 PORT_PCR_MUX(0x02)
+                ));
   /* PORTE_PCR4: ISF=0,MUX=2 */
   PORTE_PCR4 = (uint32_t)((PORTE_PCR4 & (uint32_t)~(uint32_t)(
                 PORT_PCR_ISF_MASK |
@@ -244,6 +266,35 @@ LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr)
   /* Registration of the device structure */
   PE_LDD_RegisterDeviceStructure(PE_LDD_COMPONENT_SM2_ID,DeviceDataPrv);
   return ((LDD_TDeviceData *)DeviceDataPrv); /* Return pointer to the data data structure */
+}
+
+/*
+** ===================================================================
+**     Method      :  SM2_Deinit (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         This method deinitializes the device. It switches off the
+**         device, frees the device data structure memory, interrupts
+**         vectors, etc.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+*/
+/* ===================================================================*/
+void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr)
+{
+  (void)DeviceDataPtr;                 /* Parameter is not used, suppress unused argument warning */
+  /* SPI1_C1: SPIE=0,SPE=0,SPTIE=0,MSTR=0,CPOL=0,CPHA=1,SSOE=0,LSBFE=0 */
+  SPI1_C1 = SPI_C1_CPHA_MASK;          /* Disable device */
+  /* Restoring the interrupt vector */
+  /* {FreeRTOS RTOS Adapter} Restore interrupt vector: IVT is static, no code is generated */
+  /* Unregistration of the device structure */
+  PE_LDD_UnregisterDeviceStructure(PE_LDD_COMPONENT_SM2_ID);
+  /* Deallocation of the device structure */
+  /* {FreeRTOS RTOS Adapter} Driver memory deallocation: Dynamic allocation is simulated, no deallocation code is generated */
+  /* SIM_SCGC4: SPI1=0 */
+  SIM_SCGC4 &= (uint32_t)~(uint32_t)(SIM_SCGC4_SPI1_MASK);
 }
 
 /*
@@ -348,6 +399,60 @@ LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData *BufferPtr, u
   SPI_PDD_EnableInterruptMask(SPI1_BASE_PTR, SPI_PDD_TX_BUFFER_EMPTY); /* Enable Tx buffer empty interrupt */
   /* {FreeRTOS RTOS Adapter} Critical section ends (RTOS function call is defined by FreeRTOS RTOS Adapter property) */
   taskEXIT_CRITICAL();
+  return ERR_OK;                       /* OK */
+}
+
+/*
+** ===================================================================
+**     Method      :  SM2_SelectConfiguration (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         This method selects attributes of communication from the
+**         [Attribute set list] and select a chip select from the [Chip
+**         select list]. Once any configuration is selected, a
+**         transmission can be started multiple times. This method is
+**         available if number of chip selects or number of attribute
+**         set is greater than 1. If the device doesn't support chip
+**         select functionality the ChipSelect parameter is ignored.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @param
+**         ChipSelect      - Chip select index from the
+**                           [Chip select list].
+**     @param
+**         AttributeSet    - Communication attribute
+**                           index from the [Attribute set list]
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK
+**                           ERR_SPEED - This device does not work in
+**                           the active clock configuration
+**                           ERR_DISABLED - Component is disabled
+**                           ERR_PARAM_CHIP_SELECT - Chip select index
+**                           is out of range
+**                           ERR_PARAM_ATTRIBUTE_SET - Attribute set
+**                           index is out of range
+**                           ERR_BUSY - Transmission is in progress
+*/
+/* ===================================================================*/
+LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t ChipSelect, uint8_t AttributeSet)
+{
+  /* Chip select test - this test can be disabled by setting the "Ignore range checking"
+     property to the "yes" value in the "Configuration inspector" */
+  if (ChipSelect >= SM2_CHIP_SELECT_COUNT) { /* Is Chip select index out of range? */
+    return ERR_PARAM_CHIP_SELECT;      /* Yes, return ERR_PARAM */
+  }
+  if (AttributeSet >= SM2_CONFIGURATION_COUNT) { /* Is Attribute set index out of range? */
+    return ERR_PARAM_ATTRIBUTE_SET;    /* Yes, return ERR_PARAM */
+  }
+  if ((((SM2_TDeviceDataPtr)DeviceDataPtr)->InpDataNumReq != 0x00U) || 
+(((SM2_TDeviceDataPtr)DeviceDataPtr)->OutDataNumReq != 0x00U)) { /* Is the previous operation pending? */
+    return ERR_BUSY;                   /* If yes then error */
+  }
+  SPI_PDD_SetDataFeatures(SPI1_BASE_PTR, ConfigurationSet[AttributeSet].Control1); /* Set required configuration */
+  SPI_PDD_WriteBaudRateReg(SPI1_BASE_PTR, ConfigurationSet[AttributeSet].BaudRate[0]); /* Set required configuration */
   return ERR_OK;                       /* OK */
 }
 

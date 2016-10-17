@@ -7,7 +7,7 @@
 **     Version     : Component 01.014, Driver 01.03, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
 **     Abstract    :
 **          This component implements a pulse-width modulation generator
 **          that generates signal with variable duty and fixed cycle.
@@ -16,11 +16,11 @@
 **          component.
 **     Settings    :
 **          Component name                                 : PwmLdd5
-**          Period device                                  : TPM1_MOD
-**          Duty device                                    : TPM1_C0V
-**          Output pin                                     : ADC0_DP0/ADC0_SE0/PTE20/TPM1_CH0/UART0_TX
+**          Period device                                  : TPM0_MOD
+**          Duty device                                    : TPM0_C1V
+**          Output pin                                     : ADC0_SE11/TSI0_CH15/PTC2/I2C1_SDA/TPM0_CH1
 **          Output pin signal                              : 
-**          Counter                                        : TPM1_CNT
+**          Counter                                        : TPM0_CNT
 **          Interrupt service/event                        : Disabled
 **          Period                                         : 20 ms
 **          Starting pulse width                           : 1.5 ms
@@ -40,7 +40,7 @@
 **            Clock configuration 6                        : This component disabled
 **            Clock configuration 7                        : This component disabled
 **          Referenced components                          : 
-**            Linked component                             : TU2
+**            Linked component                             : TU1
 **     Contents    :
 **         Init       - LDD_TDeviceData* PwmLdd5_Init(LDD_TUserData *UserDataPtr);
 **         Enable     - LDD_TError PwmLdd5_Enable(LDD_TDeviceData *DeviceDataPtr);
@@ -106,7 +106,7 @@
 #include "PE_Const.h"
 #include "IO_Map.h"
 /* Include inherited beans */
-#include "TU2.h"
+#include "TU1.h"
 #include "TPM_PDD.h"
 
 #include "Cpu.h"
@@ -120,7 +120,7 @@ extern "C" {
 #define PwmLdd5_PERIOD_VALUE_0 0xCCCDUL /* Period value in ticks of the timer in clock configuration 0. */
 
 /*! Peripheral base address of a device allocated by the component. This constant can be used directly in PDD macros. */
-#define PwmLdd5_PRPH_BASE_ADDRESS  0x40039000U
+#define PwmLdd5_PRPH_BASE_ADDRESS  0x40038000U
   
 /*! Device data structure pointer used when auto initialization property is enabled. This constant can be passed as a first parameter to all component's methods. */
 #define PwmLdd5_DeviceData  ((LDD_TDeviceData *)PE_LDD_GetDeviceStructure(PE_LDD_COMPONENT_PwmLdd5_ID))

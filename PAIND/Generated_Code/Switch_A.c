@@ -7,10 +7,11 @@
 **     Version     : Component 02.086, Driver 01.00, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-17, 19:59, # CodeGen: 61
 **     Abstract    :
 **         This component "BitIO" implements an one-bit input/output.
 **         It uses one bit/pin of a port.
+**         Note: This component is set to work in Input direction only.
 **         Methods of this component are mostly implemented as a macros
 **         (if supported by target language and compiler).
 **     Settings    :
@@ -18,18 +19,14 @@
 **          Pin for I/O                                    : PTA13/TPM1_CH1
 **          Pin signal                                     : 
 **          BitIO_LDD                                      : BitIO_LDD
-**          Direction                                      : Input/Output
+**          Direction                                      : Input
 **          Initialization                                 : 
-**            Init. direction                              : Output
+**            Init. direction                              : Input
 **            Init. value                                  : 0
 **          Safe mode                                      : yes
 **          Optimization for                               : speed
 **     Contents    :
-**         SetDir - void Switch_A_SetDir(bool Dir);
 **         GetVal - bool Switch_A_GetVal(void);
-**         PutVal - void Switch_A_PutVal(bool Val);
-**         ClrVal - void Switch_A_ClrVal(void);
-**         SetVal - void Switch_A_SetVal(void);
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -68,6 +65,7 @@
 ** @brief
 **         This component "BitIO" implements an one-bit input/output.
 **         It uses one bit/pin of a port.
+**         Note: This component is set to work in Input direction only.
 **         Methods of this component are mostly implemented as a macros
 **         (if supported by target language and compiler).
 */         
@@ -86,30 +84,13 @@ extern "C" {
 
 /*
 ** ===================================================================
-**     Method      :  Switch_A_SetDir (component BitIO)
-**     Description :
-**         This method sets direction of the component.
-**     Parameters  :
-**         NAME       - DESCRIPTION
-**         Dir        - Direction to set (FALSE or TRUE)
-**                      FALSE = Input, TRUE = Output
-**     Returns     : Nothing
-** ===================================================================
-*/
-/*
-void Switch_A_SetDir(bool Dir)
-
-**  This method is implemented as a macro. See Switch_A.h file.  **
-*/
-
-/*
-** ===================================================================
 **     Method      :  Switch_A_GetVal (component BitIO)
 **     Description :
 **         This method returns an input value.
 **           a) direction = Input  : reads the input value from the
 **                                   pin and returns it
 **           b) direction = Output : returns the last written value
+**         Note: This component is set to work in Input direction only.
 **     Parameters  : None
 **     Returns     :
 **         ---             - Input value. Possible values:
@@ -120,76 +101,6 @@ void Switch_A_SetDir(bool Dir)
 */
 /*
 bool Switch_A_GetVal(void)
-
-**  This method is implemented as a macro. See Switch_A.h file.  **
-*/
-
-/*
-** ===================================================================
-**     Method      :  Switch_A_PutVal (component BitIO)
-**     Description :
-**         This method writes the new output value.
-**           a) direction = Input  : sets the new output value;
-**                                   this operation will be shown on
-**                                   output after the direction has
-**                                   been switched to output
-**                                   (SetDir(TRUE);)
-**           b) direction = Output : directly writes the value to the
-**                                   appropriate pin
-**     Parameters  :
-**         NAME       - DESCRIPTION
-**         Val             - Output value. Possible values:
-**                           FALSE - logical "0" (Low level)
-**                           TRUE - logical "1" (High level)
-**     Returns     : Nothing
-** ===================================================================
-*/
-/*
-void Switch_A_PutVal(bool Val)
-
-**  This method is implemented as a macro. See Switch_A.h file.  **
-*/
-
-/*
-** ===================================================================
-**     Method      :  Switch_A_ClrVal (component BitIO)
-**     Description :
-**         This method clears (sets to zero) the output value.
-**           a) direction = Input  : sets the output value to "0";
-**                                   this operation will be shown on
-**                                   output after the direction has
-**                                   been switched to output
-**                                   (SetDir(TRUE);)
-**           b) direction = Output : directly writes "0" to the
-**                                   appropriate pin
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-/*
-void Switch_A_ClrVal(void)
-
-**  This method is implemented as a macro. See Switch_A.h file.  **
-*/
-
-/*
-** ===================================================================
-**     Method      :  Switch_A_SetVal (component BitIO)
-**     Description :
-**         This method sets (sets to one) the output value.
-**           a) direction = Input  : sets the output value to "1";
-**                                   this operation will be shown on
-**                                   output after the direction has
-**                                   been switched to output
-**                                   (SetDir(TRUE);)
-**           b) direction = Output : directly writes "1" to the
-**                                   appropriate pin
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-/*
-void Switch_A_SetVal(void)
 
 **  This method is implemented as a macro. See Switch_A.h file.  **
 */

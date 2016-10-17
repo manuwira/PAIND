@@ -7,7 +7,7 @@
 **     Version     : Component 01.086, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
 **     Abstract    :
 **         This component implements a driver for the Nordic Semiconductor nRF24L01 2.4 GHz transceiver.
 **     Settings    :

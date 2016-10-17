@@ -7,49 +7,31 @@
 **     Version     : Component 01.164, Driver 01.11, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
 **     Abstract    :
 **          This TimerUnit component provides a low level API for unified hardware access across
 **          various timer devices using the Prescaler-Counter-Compare-Capture timer structure.
 **     Settings    :
 **          Component name                                 : TU2
-**          Module name                                    : TPM1
-**          Counter                                        : TPM1_CNT
+**          Module name                                    : LPTMR0
+**          Counter                                        : LPTMR0_CNR
 **          Counter direction                              : Up
 **          Counter width                                  : 16 bits
 **          Value type                                     : uint16_t
 **          Input clock source                             : Internal
 **            Counter frequency                            : Auto select
 **          Counter restart                                : On-match
-**            Period device                                : TPM1_MOD
-**            Period                                       : 20 ms
-**            Interrupt                                    : Disabled
-**          Channel list                                   : 2
-**            Channel 0                                    : 
-**              Mode                                       : Compare
-**                Compare                                  : TPM1_C0V
-**                Offset                                   : 1.5 ms
-**                Output on compare                        : Set
-**                  Output on overrun                      : Clear
-**                  Initial state                          : Low
-**                  Output pin                             : ADC0_DP0/ADC0_SE0/PTE20/TPM1_CH0/UART0_TX
-**                  Output pin signal                      : 
-**                Interrupt                                : Disabled
-**            Channel 1                                    : 
-**              Mode                                       : Compare
-**                Compare                                  : TPM1_C1V
-**                Offset                                   : 1.5 ms
-**                Output on compare                        : Set
-**                  Output on overrun                      : Clear
-**                  Initial state                          : Low
-**                  Output pin                             : ADC0_DM0/ADC0_SE4a/PTE21/TPM1_CH1/UART0_RX
-**                  Output pin signal                      : 
-**                Interrupt                                : Disabled
+**            Period device                                : LPTMR0_CMR
+**            Period                                       : 10 ms
+**            Interrupt                                    : Enabled
+**              Interrupt                                  : INT_LPTMR0
+**              Interrupt priority                         : medium priority
+**          Channel list                                   : 0
 **          Initialization                                 : 
 **            Enabled in init. code                        : yes
 **            Auto initialization                          : no
 **            Event mask                                   : 
-**              OnCounterRestart                           : Disabled
+**              OnCounterRestart                           : Enabled
 **              OnChannel0                                 : Disabled
 **              OnChannel1                                 : Disabled
 **              OnChannel2                                 : Disabled
@@ -68,15 +50,9 @@
 **            Clock configuration 6                        : This component disabled
 **            Clock configuration 7                        : This component disabled
 **     Contents    :
-**         Init               - LDD_TDeviceData* TU2_Init(LDD_TUserData *UserDataPtr);
-**         Enable             - LDD_TError TU2_Enable(LDD_TDeviceData *DeviceDataPtr);
-**         Disable            - LDD_TError TU2_Disable(LDD_TDeviceData *DeviceDataPtr);
-**         GetPeriodTicks     - LDD_TError TU2_GetPeriodTicks(LDD_TDeviceData *DeviceDataPtr, TU2_TValueType...
-**         ResetCounter       - LDD_TError TU2_ResetCounter(LDD_TDeviceData *DeviceDataPtr);
-**         GetCounterValue    - TU2_TValueType TU2_GetCounterValue(LDD_TDeviceData *DeviceDataPtr);
-**         SetOffsetTicks     - LDD_TError TU2_SetOffsetTicks(LDD_TDeviceData *DeviceDataPtr, uint8_t...
-**         GetOffsetTicks     - LDD_TError TU2_GetOffsetTicks(LDD_TDeviceData *DeviceDataPtr, uint8_t...
-**         SelectOutputAction - LDD_TError TU2_SelectOutputAction(LDD_TDeviceData *DeviceDataPtr, uint8_t...
+**         Init    - LDD_TDeviceData* TU2_Init(LDD_TUserData *UserDataPtr);
+**         Enable  - LDD_TError TU2_Enable(LDD_TDeviceData *DeviceDataPtr);
+**         Disable - LDD_TError TU2_Disable(LDD_TDeviceData *DeviceDataPtr);
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -133,7 +109,7 @@
 #include "IO_Map.h"
 /* Include inherited beans */
 
-#include "TPM_PDD.h"
+#include "LPTMR_PDD.h"
 #include "Cpu.h"
 
 #ifdef __cplusplus
@@ -145,30 +121,23 @@ extern "C" {
 #define __BWUserType_TU2_TValueType
   typedef uint16_t TU2_TValueType ;    /* Type for data parameters of methods */
 #endif
-#define TU2_CNT_INP_FREQ_U_0 0x00280000UL /* Counter input frequency in Hz */
-#define TU2_CNT_INP_FREQ_R_0 2621438.120953155F /* Counter input frequency in Hz */
+#define TU2_CNT_INP_FREQ_U_0 0x8000UL  /* Counter input frequency in Hz */
+#define TU2_CNT_INP_FREQ_R_0 32768.00013421773F /* Counter input frequency in Hz */
 #define TU2_CNT_INP_FREQ_COUNT 0U      /* Count of predefined counter input frequencies */
-#define TU2_PERIOD_TICKS   0xCCCDUL    /* Initialization value of period in 'counter ticks' */
-#define TU2_NUMBER_OF_CHANNELS 0x02U   /* Count of predefined channels */
+#define TU2_PERIOD_TICKS   0x0148UL    /* Initialization value of period in 'counter ticks' */
+#define TU2_NUMBER_OF_CHANNELS 0x00U   /* Count of predefined channels */
 #define TU2_COUNTER_WIDTH  0x10U       /* Counter width in bits  */
 #define TU2_COUNTER_DIR    DIR_UP      /* Direction of counting */
-#define TU2_OFFSET_0_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 0 */
-#define TU2_OFFSET_1_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 1 */
 /*! Peripheral base address of a device allocated by the component. This constant can be used directly in PDD macros. */
-#define TU2_PRPH_BASE_ADDRESS  0x40039000U
+#define TU2_PRPH_BASE_ADDRESS  0x40040000U
   
 /* Methods configuration constants - generated for all enabled component's methods */
 #define TU2_Init_METHOD_ENABLED        /*!< Init method of the component TU2 is enabled (generated) */
 #define TU2_Enable_METHOD_ENABLED      /*!< Enable method of the component TU2 is enabled (generated) */
 #define TU2_Disable_METHOD_ENABLED     /*!< Disable method of the component TU2 is enabled (generated) */
-#define TU2_GetPeriodTicks_METHOD_ENABLED /*!< GetPeriodTicks method of the component TU2 is enabled (generated) */
-#define TU2_ResetCounter_METHOD_ENABLED /*!< ResetCounter method of the component TU2 is enabled (generated) */
-#define TU2_GetCounterValue_METHOD_ENABLED /*!< GetCounterValue method of the component TU2 is enabled (generated) */
-#define TU2_SetOffsetTicks_METHOD_ENABLED /*!< SetOffsetTicks method of the component TU2 is enabled (generated) */
-#define TU2_GetOffsetTicks_METHOD_ENABLED /*!< GetOffsetTicks method of the component TU2 is enabled (generated) */
-#define TU2_SelectOutputAction_METHOD_ENABLED /*!< SelectOutputAction method of the component TU2 is enabled (generated) */
 
 /* Events configuration constants - generated for all enabled component's events */
+#define TU2_OnCounterRestart_EVENT_ENABLED /*!< OnCounterRestart event of the component TU2 is enabled (generated) */
 
 
 
@@ -242,172 +211,16 @@ LDD_TError TU2_Disable(LDD_TDeviceData *DeviceDataPtr);
 
 /*
 ** ===================================================================
-**     Method      :  TU2_GetPeriodTicks (component TimerUnit_LDD)
-*/
-/*!
-**     @brief
-**         Returns the number of counter ticks before re-initialization.
-**         See also method [SetPeriodTicks]. This method is available
-**         only if the property ["Counter restart"] is switched to
-**         'on-match' value.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-**     @param
-**         TicksPtr        - Pointer to return value of the
-**                           number of counter ticks before
-**                           re-initialization
-**     @return
-**                         - Error code, possible codes:
-**                           ERR_OK - OK 
-**                           ERR_SPEED - The component does not work in
-**                           the active clock configuration
-*/
-/* ===================================================================*/
-LDD_TError TU2_GetPeriodTicks(LDD_TDeviceData *DeviceDataPtr, TU2_TValueType *TicksPtr);
-
-/*
+**     Method      :  TU2_Interrupt (component TimerUnit_LDD)
+**
+**     Description :
+**         The method services the interrupt of the selected peripheral(s)
+**         and eventually invokes event(s) of the component.
+**         This method is internal. It is used by Processor Expert only.
 ** ===================================================================
-**     Method      :  TU2_ResetCounter (component TimerUnit_LDD)
 */
-/*!
-**     @brief
-**         Resets counter. If counter is counting up then it is set to
-**         zero. If counter is counting down then counter is updated to
-**         the reload value.
-**         The method is not available if HW doesn't allow resetting of
-**         the counter.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-**     @return
-**                         - Error code, possible codes:
-**                           ERR_OK - OK 
-**                           ERR_SPEED - The component does not work in
-**                           the active clock configuration
-*/
-/* ===================================================================*/
-LDD_TError TU2_ResetCounter(LDD_TDeviceData *DeviceDataPtr);
-
-/*
-** ===================================================================
-**     Method      :  TU2_GetCounterValue (component TimerUnit_LDD)
-*/
-/*!
-**     @brief
-**         Returns the content of counter register. This method can be
-**         used both if counter is enabled and if counter is disabled.
-**         The method is not available if HW doesn't allow reading of
-**         the counter.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-**     @return
-**                         - Counter value (number of counted ticks).
-*/
-/* ===================================================================*/
-TU2_TValueType TU2_GetCounterValue(LDD_TDeviceData *DeviceDataPtr);
-
-/*
-** ===================================================================
-**     Method      :  TU2_SetOffsetTicks (component TimerUnit_LDD)
-*/
-/*!
-**     @brief
-**         Sets the new offset value to channel specified by the
-**         parameter ChannelIdx. It is user responsibility to use value
-**         below selected period. This method is available when at
-**         least one channel is configured.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-**     @param
-**         ChannelIdx      - Index of the component
-**                           channel.
-**     @param
-**         Ticks           - Number of counter ticks to compare
-**                           match.
-**     @return
-**                         - Error code, possible codes:
-**                           ERR_OK - OK 
-**                           ERR_PARAM_INDEX - ChannelIdx parameter is
-**                           out of possible range.
-**                           ERR_NOTAVAIL -  The compare mode is not
-**                           selected for selected channel
-**                           ERR_PARAM_TICKS - Ticks parameter is out of
-**                           possible range.
-**                           ERR_SPEED - The component does not work in
-**                           the active clock configuration
-*/
-/* ===================================================================*/
-LDD_TError TU2_SetOffsetTicks(LDD_TDeviceData *DeviceDataPtr, uint8_t ChannelIdx, TU2_TValueType Ticks);
-
-/*
-** ===================================================================
-**     Method      :  TU2_GetOffsetTicks (component TimerUnit_LDD)
-*/
-/*!
-**     @brief
-**         Returns the number of counter ticks to compare match channel
-**         specified by the parameter ChannelIdx. See also method
-**         [SetOffsetTicks]. This method is available when at least one
-**         channel is configured.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-**     @param
-**         ChannelIdx      - Index of the component
-**                           channel.
-**     @param
-**         TicksPtr        - Pointer to return value of the
-**                           number of counter ticks to compare match.
-**     @return
-**                         - Error code, possible codes:
-**                           ERR_OK - OK 
-**                           ERR_PARAM_INDEX - ChannelIdx parameter is
-**                           out of possible range.
-**                           ERR_NOTAVAIL -  The compare mode is not
-**                           selected for selected channel.
-**                           ERR_SPEED - The component does not work in
-**                           the active clock configuration
-*/
-/* ===================================================================*/
-LDD_TError TU2_GetOffsetTicks(LDD_TDeviceData *DeviceDataPtr, uint8_t ChannelIdx, TU2_TValueType *TicksPtr);
-
-/*
-** ===================================================================
-**     Method      :  TU2_SelectOutputAction (component TimerUnit_LDD)
-*/
-/*!
-**     @brief
-**         Sets the type of compare match and counter overflow action
-**         on channel output. This method is available when at least
-**         one channel is configured.
-**     @param
-**         DeviceDataPtr   - Device data structure
-**                           pointer returned by [Init] method.
-**     @param
-**         ChannelIdx      - Index of the component
-**                           channel.
-**     @param
-**         CompareAction   - Select output action
-**                           on compare match
-**     @param
-**         CounterAction   - Select output action
-**                           on counter overflow
-**     @return
-**                         - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_PARAM_INDEX - ChannelIdx parameter is
-**                           out of possible range
-**                           ERR_NOTAVAIL -  Action is not possible on
-**                           selected channel or counter. Supported
-**                           combinations are HW specific.
-**                           ERR_SPEED - The component does not work in
-**                           the active clock configuration
-*/
-/* ===================================================================*/
-LDD_TError TU2_SelectOutputAction(LDD_TDeviceData *DeviceDataPtr, uint8_t ChannelIdx, LDD_TimerUnit_TOutAction CompareAction, LDD_TimerUnit_TOutAction CounterAction);
+/* {FreeRTOS RTOS Adapter} ISR function prototype */
+PE_ISR(TU2_Interrupt);
 
 /* END TU2. */
 

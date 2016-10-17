@@ -6,7 +6,7 @@
 **     Version     : Component 01.025, Driver 01.04, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
+**     Date/Time   : 2016-10-13, 10:46, # CodeGen: 58
 **     Abstract    :
 **
 **     Settings    :
@@ -72,7 +72,6 @@
   #include "Bein_L.h"
   #include "Pwm5.h"
   #include "PwmLdd5.h"
-  #include "TU2.h"
   #include "Bein_R.h"
   #include "Pwm6.h"
   #include "PwmLdd6.h"
@@ -111,9 +110,17 @@
   #include "SM1.h"
   #include "SMasterLdd1.h"
   #include "TRIG.h"
-  #include "TU3.h"
   #include "TMOUT1.h"
+  #include "SD1.h"
+  #include "SS1.h"
+  #include "CD1.h"
+  #include "WP1.h"
+  #include "FAT1.h"
+  #include "TmDt1.h"
+  #include "TimeDateLdd1.h"
+  #include "TU2.h"
   #include "SM2.h"
+  #include "TU3.h"
   #include "Events.h"
 
 
@@ -177,7 +184,7 @@
     (tIsrFunc)&Cpu_Interrupt,          /* 0x29  0x000000A4   -   ivINT_DAC0                    unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x2A  0x000000A8   -   ivINT_TSI0                    unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x2B  0x000000AC   -   ivINT_MCG                     unused by PE */
-    (tIsrFunc)&Cpu_Interrupt,          /* 0x2C  0x000000B0   -   ivINT_LPTMR0                  unused by PE */
+    (tIsrFunc)&TU2_Interrupt,          /* 0x2C  0x000000B0   2   ivINT_LPTMR0                  used by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x2D  0x000000B4   -   ivINT_Reserved45              unused by PE */
     (tIsrFunc)&Cpu_Interrupt,          /* 0x2E  0x000000B8   -   ivINT_PORTA                   unused by PE */
     (tIsrFunc)&Cpu_Interrupt           /* 0x2F  0x000000BC   -   ivINT_PORTD                   unused by PE */

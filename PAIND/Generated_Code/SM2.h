@@ -7,7 +7,7 @@
 **     Version     : Component 01.111, Driver 01.02, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:57, # CodeGen: 38
+**     Date/Time   : 2016-10-13, 10:18, # CodeGen: 56
 **     Abstract    :
 **         This component "SPIMaster_LDD" implements MASTER part of synchronous
 **         serial master-slave communication.
@@ -21,21 +21,29 @@
 **            Output interrupt priority                    : medium priority
 **          Settings                                       : 
 **            Input pin                                    : Enabled
-**              Pin                                        : PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL
-**              Pin signal                                 : 
+**              Pin                                        : ADC0_SE7b/PTD6/LLWU_P15/SPI1_MOSI/UART0_RX/SPI1_MISO
+**              Pin signal                                 : SD_MISO
 **            Output pin                                   : Enabled
 **              Pin                                        : PTE3/SPI1_MISO/SPI1_MOSI
-**              Pin signal                                 : 
+**              Pin signal                                 : SD_MOSI
 **            Clock pin                                    : 
-**              Pin                                        : PTE2/SPI1_SCK
-**              Pin signal                                 : 
+**              Pin                                        : PTB11/SPI1_SCK
+**              Pin signal                                 : SD_CLK
 **            Chip select list                             : 1
 **              Chip select 0                              : 
 **                Pin                                      : PTE4/SPI1_PCS0
 **                Pin signal                               : 
 **                Active level                             : Low
-**            Attribute set list                           : 1
+**            Attribute set list                           : 2
 **              Attribute set 0                            : 
+**                Width                                    : 8 bits
+**                MSB first                                : yes
+**                Clock polarity                           : Low
+**                Clock phase                              : Capture on leading edge
+**                Parity                                   : None
+**                Chip select toggling                     : yes
+**                Clock rate index                         : 0
+**              Attribute set 1                            : 
 **                Width                                    : 8 bits
 **                MSB first                                : yes
 **                Clock polarity                           : Low
@@ -54,7 +62,7 @@
 **            Initial chip select                          : 0
 **            Initial attribute set                        : 0
 **            Enabled in init. code                        : yes
-**            Auto initialization                          : no
+**            Auto initialization                          : yes
 **            Event mask                                   : 
 **              OnBlockSent                                : Enabled
 **              OnBlockReceived                            : Enabled
@@ -69,9 +77,11 @@
 **            Clock configuration 6                        : This component disabled
 **            Clock configuration 7                        : This component disabled
 **     Contents    :
-**         Init         - LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
-**         SendBlock    - LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
-**         ReceiveBlock - LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
+**         Init                - LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
+**         Deinit              - void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr);
+**         SendBlock           - LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
+**         ReceiveBlock        - LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
+**         SelectConfiguration - LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t...
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -139,17 +149,22 @@ extern "C" {
 /*! Peripheral base address of a device allocated by the component. This constant can be used directly in PDD macros. */
 #define SM2_PRPH_BASE_ADDRESS  0x40077000U
   
+/*! Device data structure pointer used when auto initialization property is enabled. This constant can be passed as a first parameter to all component's methods. */
+#define SM2_DeviceData  ((LDD_TDeviceData *)PE_LDD_GetDeviceStructure(PE_LDD_COMPONENT_SM2_ID))
+
 /* Methods configuration constants - generated for all enabled component's methods */
 #define SM2_Init_METHOD_ENABLED        /*!< Init method of the component SM2 is enabled (generated) */
+#define SM2_Deinit_METHOD_ENABLED      /*!< Deinit method of the component SM2 is enabled (generated) */
 #define SM2_SendBlock_METHOD_ENABLED   /*!< SendBlock method of the component SM2 is enabled (generated) */
 #define SM2_ReceiveBlock_METHOD_ENABLED /*!< ReceiveBlock method of the component SM2 is enabled (generated) */
+#define SM2_SelectConfiguration_METHOD_ENABLED /*!< SelectConfiguration method of the component SM2 is enabled (generated) */
 
 /* Events configuration constants - generated for all enabled component's events */
 #define SM2_OnBlockSent_EVENT_ENABLED  /*!< OnBlockSent event of the component SM2 is enabled (generated) */
 #define SM2_OnBlockReceived_EVENT_ENABLED /*!< OnBlockReceived event of the component SM2 is enabled (generated) */
 
 #define SM2_CHIP_SELECT_COUNT 1U       /*!< Number of chip selects */
-#define SM2_CONFIGURATION_COUNT 1U     /*!< Number of predefined configurations */
+#define SM2_CONFIGURATION_COUNT 2U     /*!< Number of predefined configurations */
 
 /*
 ** ===================================================================
@@ -175,6 +190,22 @@ extern "C" {
 */
 /* ===================================================================*/
 LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
+**     Method      :  SM2_Deinit (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         This method deinitializes the device. It switches off the
+**         device, frees the device data structure memory, interrupts
+**         vectors, etc.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+*/
+/* ===================================================================*/
+void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr);
 
 /*
 ** ===================================================================
@@ -249,6 +280,43 @@ LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData *BufferPtr
 */
 /* ===================================================================*/
 LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData *BufferPtr, uint16_t Size);
+
+/*
+** ===================================================================
+**     Method      :  SM2_SelectConfiguration (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         This method selects attributes of communication from the
+**         [Attribute set list] and select a chip select from the [Chip
+**         select list]. Once any configuration is selected, a
+**         transmission can be started multiple times. This method is
+**         available if number of chip selects or number of attribute
+**         set is greater than 1. If the device doesn't support chip
+**         select functionality the ChipSelect parameter is ignored.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @param
+**         ChipSelect      - Chip select index from the
+**                           [Chip select list].
+**     @param
+**         AttributeSet    - Communication attribute
+**                           index from the [Attribute set list]
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK
+**                           ERR_SPEED - This device does not work in
+**                           the active clock configuration
+**                           ERR_DISABLED - Component is disabled
+**                           ERR_PARAM_CHIP_SELECT - Chip select index
+**                           is out of range
+**                           ERR_PARAM_ATTRIBUTE_SET - Attribute set
+**                           index is out of range
+**                           ERR_BUSY - Transmission is in progress
+*/
+/* ===================================================================*/
+LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t ChipSelect, uint8_t AttributeSet);
 
 /*
 ** ===================================================================

@@ -7,17 +7,17 @@
 **     Version     : Component 02.241, Driver 01.01, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-11, 15:54, # CodeGen: 37
+**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
 **     Abstract    :
 **         This component implements a pulse-width modulation generator
 **         that generates signal with variable duty and fixed cycle. 
 **     Settings    :
 **          Component name                                 : Pwm6
-**          PWM or PPG device                              : TPM1_C1V
+**          PWM or PPG device                              : TPM0_C5V
 **          Duty compare                                   : 
-**          Output pin                                     : ADC0_DM0/ADC0_SE4a/PTE21/TPM1_CH1/UART0_RX
+**          Output pin                                     : CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5
 **          Output pin signal                              : 
-**          Counter                                        : TPM1_CNT
+**          Counter                                        : TPM0_CNT
 **          Interrupt service/event                        : Disabled
 **          Period                                         : 20 ms
 **          Starting pulse width                           : 1.5 ms
