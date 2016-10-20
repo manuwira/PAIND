@@ -78,6 +78,19 @@ uint16_t US_Measure_us(void) {
   return us;
 }
 
+void Measure(void) {
+  uint16_t us, cm;
+  uint8_t buf[8];
+
+  us = US_Measure_us();
+  //UTIL1_Num16uToStrFormatted(buf, sizeof(buf), us, ' ', 5);
+
+  cm = US_usToCentimeters(us, 22);
+  UTIL1_Num16uToStrFormatted(buf, sizeof(buf), cm, ' ', 5);
+
+  ROT_Put(cm<10); /* red LED if object closer than 10 cm */
+}
+
 void US_Init(void) {
   usDevice.state = ECHO_IDLE;
   usDevice.capture = 0;

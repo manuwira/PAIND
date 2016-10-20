@@ -21,19 +21,6 @@
 #include "LedControl.h"
 
 
-static void Measure(void) {
-  uint16_t us, cm;
-  uint8_t buf[8];
-
-  us = US_Measure_us();
-  //UTIL1_Num16uToStrFormatted(buf, sizeof(buf), us, ' ', 5);
-
-  cm = US_usToCentimeters(us, 22);
-  UTIL1_Num16uToStrFormatted(buf, sizeof(buf), cm, ' ', 5);
-
-  ROT_Put(cm<10); /* red LED if object closer than 10 cm */
-}
-
 static portTASK_FUNCTION(Task1, pvParameters) {
   (void)pvParameters; /* parameter not used */
 

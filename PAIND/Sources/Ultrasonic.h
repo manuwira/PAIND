@@ -32,6 +32,8 @@ uint16_t US_usToCentimeters(uint16_t microseconds, uint8_t temperatureCelsius);
 
 uint16_t US_Measure_us(void);
 
+void Measure(void);
+
 /*
  * \brief Driver initialization routine.
  */
