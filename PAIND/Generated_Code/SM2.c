@@ -7,33 +7,29 @@
 **     Version     : Component 01.111, Driver 01.02, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:18, # CodeGen: 56
+**     Date/Time   : 2016-10-18, 15:53, # CodeGen: 48
 **     Abstract    :
 **         This component "SPIMaster_LDD" implements MASTER part of synchronous
 **         serial master-slave communication.
 **     Settings    :
 **          Component name                                 : SM2
-**          Device                                         : SPI1
+**          Device                                         : SPI0
 **          Interrupt service/event                        : Enabled
-**            Input interrupt                              : INT_SPI1
+**            Input interrupt                              : INT_SPI0
 **            Input interrupt priority                     : medium priority
-**            Output interrupt                             : INT_SPI1
+**            Output interrupt                             : INT_SPI0
 **            Output interrupt priority                    : medium priority
 **          Settings                                       : 
 **            Input pin                                    : Enabled
-**              Pin                                        : ADC0_SE7b/PTD6/LLWU_P15/SPI1_MOSI/UART0_RX/SPI1_MISO
+**              Pin                                        : PTA16/SPI0_MOSI/SPI0_MISO
 **              Pin signal                                 : SD_MISO
 **            Output pin                                   : Enabled
-**              Pin                                        : PTE3/SPI1_MISO/SPI1_MOSI
+**              Pin                                        : PTA17/SPI0_MISO/SPI0_MOSI
 **              Pin signal                                 : SD_MOSI
 **            Clock pin                                    : 
-**              Pin                                        : PTB11/SPI1_SCK
+**              Pin                                        : PTC5/LLWU_P9/SPI0_SCK/LPTMR0_ALT2/CMP0_OUT
 **              Pin signal                                 : SD_CLK
-**            Chip select list                             : 1
-**              Chip select 0                              : 
-**                Pin                                      : PTE4/SPI1_PCS0
-**                Pin signal                               : 
-**                Active level                             : Low
+**            Chip select list                             : 0
 **            Attribute set list                           : 2
 **              Attribute set 0                            : 
 **                Width                                    : 8 bits
@@ -50,7 +46,7 @@
 **                Clock phase                              : Capture on leading edge
 **                Parity                                   : None
 **                Chip select toggling                     : yes
-**                Clock rate index                         : 0
+**                Clock rate index                         : 1
 **            Clock rate                                   : 375 kHz
 **            HW input buffer size                         : 1
 **            HW input watermark                           : 1
@@ -64,7 +60,7 @@
 **            Enabled in init. code                        : yes
 **            Auto initialization                          : yes
 **            Event mask                                   : 
-**              OnBlockSent                                : Enabled
+**              OnBlockSent                                : Disabled
 **              OnBlockReceived                            : Enabled
 **              OnError                                    : Disabled
 **          CPU clock/configuration selection              : 
@@ -79,8 +75,12 @@
 **     Contents    :
 **         Init                - LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr);
 **         Deinit              - void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr);
+**         Enable              - LDD_TError SM2_Enable(LDD_TDeviceData *DeviceDataPtr);
+**         Disable             - LDD_TError SM2_Disable(LDD_TDeviceData *DeviceDataPtr);
 **         SendBlock           - LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
 **         ReceiveBlock        - LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData...
+**         GetSentDataNum      - uint16_t SM2_GetSentDataNum(LDD_TDeviceData *DeviceDataPtr);
+**         GetReceivedDataNum  - uint16_t SM2_GetReceivedDataNum(LDD_TDeviceData *DeviceDataPtr);
 **         SelectConfiguration - LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t...
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
@@ -129,7 +129,6 @@
 /* MODULE SM2. */
 /*lint -save  -e926 -e927 -e928 -e929 Disable MISRA rule (11.4) checking. */
 
-#include "Events.h"
 #include "SD1.h"
 #include "SM2.h"
 #include "FreeRTOS.h" /* FreeRTOS interface */
@@ -138,10 +137,10 @@
 extern "C" {
 #endif 
 
-#define AVAILABLE_EVENTS_MASK (LDD_SPIMASTER_ON_BLOCK_RECEIVED | LDD_SPIMASTER_ON_BLOCK_SENT)
+#define AVAILABLE_EVENTS_MASK (LDD_SPIMASTER_ON_BLOCK_RECEIVED)
 
 /* These constants contain pins masks */
-#define SM2_AVAILABLE_PIN_MASK (LDD_SPIMASTER_INPUT_PIN | LDD_SPIMASTER_OUTPUT_PIN | LDD_SPIMASTER_CLK_PIN | LDD_SPIMASTER_CS_0_PIN)
+#define SM2_AVAILABLE_PIN_MASK (LDD_SPIMASTER_INPUT_PIN | LDD_SPIMASTER_OUTPUT_PIN | LDD_SPIMASTER_CLK_PIN)
 
 typedef struct {
   uint8_t Control1;
@@ -150,11 +149,12 @@ typedef struct {
 } LDD_SPIMASTER_TConfiguration;
 
 static const LDD_SPIMASTER_TConfiguration ConfigurationSet[SM2_CONFIGURATION_COUNT] = {
-    {0x00U, 0x10U,{0x62U}},
-    {0x00U, 0x10U,{0x62U}}
+    {0x00U, 0x10U,{0x05U}},
+    {0x00U, 0x10U,{0x00U}}
 };
 
 typedef struct {
+  bool EnUser;                         /* Enable/Disable device */
   LDD_SPIMASTER_TError ErrFlag;        /* Error flags */
   uint16_t InpRecvDataNum;             /* The counter of received characters */
   uint8_t *InpDataPtr;                 /* The buffer pointer for received characters */
@@ -170,8 +170,9 @@ typedef SM2_TDeviceData* SM2_TDeviceDataPtr; /* Pointer to the device data struc
 /* {FreeRTOS RTOS Adapter} Static object used for simulation of dynamic driver memory allocation */
 static SM2_TDeviceData DeviceDataPrv__DEFAULT_RTOS_ALLOC;
 /* {FreeRTOS RTOS Adapter} Global variable used for passing a parameter into ISR */
-static SM2_TDeviceDataPtr INT_SPI1__BAREBOARD_RTOS_ISRPARAM;
+static SM2_TDeviceDataPtr INT_SPI0__BAREBOARD_RTOS_ISRPARAM;
 /* Internal method prototypes */
+static void HWEnDi(LDD_TDeviceData *DeviceDataPtr);
 
 /*
 ** ===================================================================
@@ -206,7 +207,8 @@ LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr)
   DeviceDataPrv->UserData = UserDataPtr; /* Store the RTOS device structure */
   /* Interrupt vector(s) allocation */
   /* {FreeRTOS RTOS Adapter} Set interrupt vector: IVT is static, ISR parameter is passed by the global variable */
-  INT_SPI1__BAREBOARD_RTOS_ISRPARAM = DeviceDataPrv;
+  INT_SPI0__BAREBOARD_RTOS_ISRPARAM = DeviceDataPrv;
+  DeviceDataPrv->EnUser = TRUE;        /* Enable device */
   DeviceDataPrv->ErrFlag = 0x00U;      /* Clear error flags */
   /* Clear the receive counters and pointer */
   DeviceDataPrv->InpRecvDataNum = 0x00U; /* Clear the counter of received characters */
@@ -216,53 +218,46 @@ LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr)
   DeviceDataPrv->OutSentDataNum = 0x00U; /* Clear the counter of sent characters */
   DeviceDataPrv->OutDataNumReq = 0x00U; /* Clear the counter of characters to be send by SendBlock() */
   DeviceDataPrv->OutDataPtr = NULL;    /* Clear the buffer pointer for data to be transmitted */
-  /* SIM_SCGC4: SPI1=1 */
-  SIM_SCGC4 |= SIM_SCGC4_SPI1_MASK;
+  /* SIM_SCGC4: SPI0=1 */
+  SIM_SCGC4 |= SIM_SCGC4_SPI0_MASK;
   /* Interrupt vector(s) priority setting */
-  /* NVIC_IPR2: PRI_11=0x80 */
+  /* NVIC_IPR2: PRI_10=0x80 */
   NVIC_IPR2 = (uint32_t)((NVIC_IPR2 & (uint32_t)~(uint32_t)(
-               NVIC_IP_PRI_11(0x7F)
+               NVIC_IP_PRI_10(0x7F)
               )) | (uint32_t)(
-               NVIC_IP_PRI_11(0x80)
+               NVIC_IP_PRI_10(0x80)
               ));
-  /* NVIC_ISER: SETENA|=0x0800 */
-  NVIC_ISER |= NVIC_ISER_SETENA(0x0800);
-  /* PORTD_PCR6: ISF=0,MUX=5 */
-  PORTD_PCR6 = (uint32_t)((PORTD_PCR6 & (uint32_t)~(uint32_t)(
-                PORT_PCR_ISF_MASK |
-                PORT_PCR_MUX(0x02)
-               )) | (uint32_t)(
-                PORT_PCR_MUX(0x05)
-               ));
-  /* PORTE_PCR3: ISF=0,MUX=5 */
-  PORTE_PCR3 = (uint32_t)((PORTE_PCR3 & (uint32_t)~(uint32_t)(
-                PORT_PCR_ISF_MASK |
-                PORT_PCR_MUX(0x02)
-               )) | (uint32_t)(
-                PORT_PCR_MUX(0x05)
-               ));
-  /* PORTB_PCR11: ISF=0,MUX=2 */
-  PORTB_PCR11 = (uint32_t)((PORTB_PCR11 & (uint32_t)~(uint32_t)(
+  /* NVIC_ISER: SETENA|=0x0400 */
+  NVIC_ISER |= NVIC_ISER_SETENA(0x0400);
+  /* PORTA_PCR16: ISF=0,MUX=5 */
+  PORTA_PCR16 = (uint32_t)((PORTA_PCR16 & (uint32_t)~(uint32_t)(
                  PORT_PCR_ISF_MASK |
-                 PORT_PCR_MUX(0x05)
-                )) | (uint32_t)(
                  PORT_PCR_MUX(0x02)
+                )) | (uint32_t)(
+                 PORT_PCR_MUX(0x05)
                 ));
-  /* PORTE_PCR4: ISF=0,MUX=2 */
-  PORTE_PCR4 = (uint32_t)((PORTE_PCR4 & (uint32_t)~(uint32_t)(
+  /* PORTA_PCR17: ISF=0,MUX=5 */
+  PORTA_PCR17 = (uint32_t)((PORTA_PCR17 & (uint32_t)~(uint32_t)(
+                 PORT_PCR_ISF_MASK |
+                 PORT_PCR_MUX(0x02)
+                )) | (uint32_t)(
+                 PORT_PCR_MUX(0x05)
+                ));
+  /* PORTC_PCR5: ISF=0,MUX=2 */
+  PORTC_PCR5 = (uint32_t)((PORTC_PCR5 & (uint32_t)~(uint32_t)(
                 PORT_PCR_ISF_MASK |
                 PORT_PCR_MUX(0x05)
                )) | (uint32_t)(
                 PORT_PCR_MUX(0x02)
                ));
-  /* SPI1_C1: SPIE=0,SPE=0,SPTIE=0,MSTR=1,CPOL=0,CPHA=0,SSOE=1,LSBFE=0 */
-  SPI1_C1 = (SPI_C1_MSTR_MASK | SPI_C1_SSOE_MASK); /* Set configuration register */
-  /* SPI1_C2: SPMIE=0,??=0,TXDMAE=0,MODFEN=1,BIDIROE=0,RXDMAE=0,SPISWAI=0,SPC0=0 */
-  SPI1_C2 = SPI_C2_MODFEN_MASK;        /* Set configuration register */
-  /* SPI1_BR: ??=0,SPPR=6,SPR=2 */
-  SPI1_BR = (SPI_BR_SPPR(0x06) | SPI_BR_SPR(0x02)); /* Set baud rate register */
-  /* SPI1_C1: SPE=1 */
-  SPI1_C1 |= SPI_C1_SPE_MASK;          /* Enable SPI module */
+  /* SPI0_C1: SPIE=0,SPE=0,SPTIE=0,MSTR=1,CPOL=0,CPHA=0,SSOE=1,LSBFE=0 */
+  SPI0_C1 = (SPI_C1_MSTR_MASK | SPI_C1_SSOE_MASK); /* Set configuration register */
+  /* SPI0_C2: SPMIE=0,??=0,TXDMAE=0,MODFEN=1,BIDIROE=0,RXDMAE=0,SPISWAI=0,SPC0=0 */
+  SPI0_C2 = SPI_C2_MODFEN_MASK;        /* Set configuration register */
+  /* SPI0_BR: ??=0,SPPR=0,SPR=5 */
+  SPI0_BR = (SPI_BR_SPPR(0x00) | SPI_BR_SPR(0x05)); /* Set baud rate register */
+  /* SPI0_C1: SPE=1 */
+  SPI0_C1 |= SPI_C1_SPE_MASK;          /* Enable SPI module */
   /* Registration of the device structure */
   PE_LDD_RegisterDeviceStructure(PE_LDD_COMPONENT_SM2_ID,DeviceDataPrv);
   return ((LDD_TDeviceData *)DeviceDataPrv); /* Return pointer to the data data structure */
@@ -285,16 +280,78 @@ LDD_TDeviceData* SM2_Init(LDD_TUserData *UserDataPtr)
 void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr)
 {
   (void)DeviceDataPtr;                 /* Parameter is not used, suppress unused argument warning */
-  /* SPI1_C1: SPIE=0,SPE=0,SPTIE=0,MSTR=0,CPOL=0,CPHA=1,SSOE=0,LSBFE=0 */
-  SPI1_C1 = SPI_C1_CPHA_MASK;          /* Disable device */
+  /* SPI0_C1: SPIE=0,SPE=0,SPTIE=0,MSTR=0,CPOL=0,CPHA=1,SSOE=0,LSBFE=0 */
+  SPI0_C1 = SPI_C1_CPHA_MASK;          /* Disable device */
   /* Restoring the interrupt vector */
   /* {FreeRTOS RTOS Adapter} Restore interrupt vector: IVT is static, no code is generated */
   /* Unregistration of the device structure */
   PE_LDD_UnregisterDeviceStructure(PE_LDD_COMPONENT_SM2_ID);
   /* Deallocation of the device structure */
   /* {FreeRTOS RTOS Adapter} Driver memory deallocation: Dynamic allocation is simulated, no deallocation code is generated */
-  /* SIM_SCGC4: SPI1=0 */
-  SIM_SCGC4 &= (uint32_t)~(uint32_t)(SIM_SCGC4_SPI1_MASK);
+  /* SIM_SCGC4: SPI0=0 */
+  SIM_SCGC4 &= (uint32_t)~(uint32_t)(SIM_SCGC4_SPI0_MASK);
+}
+
+/*
+** ===================================================================
+**     Method      :  SM2_Enable (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         This method enables SPI device. This method is intended to
+**         be used together with [Disable()] method to temporary switch
+**         On/Off the device after the device is initialized. This
+**         method is required if the [Enabled in init. code] property
+**         is set to "no" value.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK
+**                           ERR_SPEED - The device doesn't work in the
+**                           active clock configuration
+*/
+/* ===================================================================*/
+LDD_TError SM2_Enable(LDD_TDeviceData *DeviceDataPtr)
+{
+  if (!((SM2_TDeviceDataPtr)DeviceDataPtr)->EnUser) { /* Is the device disabled by user? */
+    ((SM2_TDeviceDataPtr)DeviceDataPtr)->EnUser = TRUE; /* If yes then set the flag "device enabled" */
+    HWEnDi((SM2_TDeviceDataPtr)DeviceDataPtr); /* Enable the device */
+  }
+  return ERR_OK;                       /* OK */
+}
+
+/*
+** ===================================================================
+**     Method      :  SM2_Disable (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         Disables the SPI device. When the device is disabled, some
+**         component methods should not be called. If so, error
+**         ERR_DISABLED may be reported. This method is intended to be
+**         used together with [Enable()] method to temporary switch
+**         on/off the device after the device is initialized. This
+**         method is not required. The [Deinit()] method can be used to
+**         switch off and uninstall the device.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK
+**                           ERR_SPEED - The device doesn't work in the
+**                           active clock configuration
+*/
+/* ===================================================================*/
+LDD_TError SM2_Disable(LDD_TDeviceData *DeviceDataPtr)
+{
+  if (((SM2_TDeviceDataPtr)DeviceDataPtr)->EnUser) { /* Is the device enabled by user? */
+    ((SM2_TDeviceDataPtr)DeviceDataPtr)->EnUser = FALSE; /* If yes then set the flag "device disabled" */
+    HWEnDi((SM2_TDeviceDataPtr)DeviceDataPtr); /* Disable the device */
+  }
+  return ERR_OK;                       /* OK */
 }
 
 /*
@@ -337,20 +394,25 @@ void SM2_Deinit(LDD_TDeviceData *DeviceDataPtr)
 /* ===================================================================*/
 LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData *BufferPtr, uint16_t Size)
 {
+  /* Device state test - this test can be disabled by setting the "Ignore enable test"
+     property to the "yes" value in the "Configuration inspector" */
+  if (!((SM2_TDeviceDataPtr)DeviceDataPtr)->EnUser) { /* Is the device disabled by user? */
+    return ERR_DISABLED;               /* If yes then error */
+  }
   if (((SM2_TDeviceDataPtr)DeviceDataPtr)->InpDataNumReq != 0x00U) { /* Is the previous receive operation pending? */
     return ERR_BUSY;                   /* If yes then error */
   }
   /* {FreeRTOS RTOS Adapter} Critical section begin (RTOS function call is defined by FreeRTOS RTOS Adapter property) */
-  taskENTER_CRITICAL();
+  EnterCritical();
   ((SM2_TDeviceDataPtr)DeviceDataPtr)->InpDataPtr = (uint8_t*)BufferPtr; /* Store a pointer to the input data. */
   ((SM2_TDeviceDataPtr)DeviceDataPtr)->InpDataNumReq = Size; /* Store a number of characters to be received. */
   ((SM2_TDeviceDataPtr)DeviceDataPtr)->InpRecvDataNum = 0x00U; /* Set number of received characters to zero. */
-  if ((SPI_PDD_ReadStatusReg(SPI1_BASE_PTR) & SPI_PDD_RX_BUFFER_FULL) != 0U) {
-    (void)SPI_PDD_ReadData8bit(SPI1_BASE_PTR); /* Dummy read of the data register */
+  if ((SPI_PDD_ReadStatusReg(SPI0_BASE_PTR) & SPI_PDD_RX_BUFFER_FULL) != 0U) {
+    (void)SPI_PDD_ReadData8bit(SPI0_BASE_PTR); /* Dummy read of the data register */
   }
-  SPI_PDD_EnableInterruptMask(SPI1_BASE_PTR, SPI_PDD_RX_BUFFER_FULL_OR_FAULT); /* Enable Rx buffer full interrupt */
+  SPI_PDD_EnableInterruptMask(SPI0_BASE_PTR, SPI_PDD_RX_BUFFER_FULL_OR_FAULT); /* Enable Rx buffer full interrupt */
   /* {FreeRTOS RTOS Adapter} Critical section ends (RTOS function call is defined by FreeRTOS RTOS Adapter property) */
-  taskEXIT_CRITICAL();
+  ExitCritical();
   return ERR_OK;                       /* OK */
 }
 
@@ -388,18 +450,66 @@ LDD_TError SM2_ReceiveBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData *BufferPtr
 /* ===================================================================*/
 LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData *BufferPtr, uint16_t Size)
 {
+  /* Device state test - this test can be disabled by setting the "Ignore enable test"
+     property to the "yes" value in the "Configuration inspector" */
+  if (!((SM2_TDeviceDataPtr)DeviceDataPtr)->EnUser) { /* Is the device disabled by user? */
+    return ERR_DISABLED;               /* If yes then error */
+  }
   if (((SM2_TDeviceDataPtr)DeviceDataPtr)->OutDataNumReq != 0x00U) { /* Is the previous transmit operation pending? */
     return ERR_BUSY;                   /* If yes then error */
   }
   /* {FreeRTOS RTOS Adapter} Critical section begin (RTOS function call is defined by FreeRTOS RTOS Adapter property) */
-  taskENTER_CRITICAL();
+  EnterCritical();
   ((SM2_TDeviceDataPtr)DeviceDataPtr)->OutDataPtr = (uint8_t*)BufferPtr; /* Set a pointer to the output data. */
   ((SM2_TDeviceDataPtr)DeviceDataPtr)->OutDataNumReq = Size; /* Set the counter of characters to be sent. */
   ((SM2_TDeviceDataPtr)DeviceDataPtr)->OutSentDataNum = 0x00U; /* Clear the counter of sent characters. */
-  SPI_PDD_EnableInterruptMask(SPI1_BASE_PTR, SPI_PDD_TX_BUFFER_EMPTY); /* Enable Tx buffer empty interrupt */
+  SPI_PDD_EnableInterruptMask(SPI0_BASE_PTR, SPI_PDD_TX_BUFFER_EMPTY); /* Enable Tx buffer empty interrupt */
   /* {FreeRTOS RTOS Adapter} Critical section ends (RTOS function call is defined by FreeRTOS RTOS Adapter property) */
-  taskEXIT_CRITICAL();
+  ExitCritical();
   return ERR_OK;                       /* OK */
+}
+
+/*
+** ===================================================================
+**     Method      :  SM2_GetReceivedDataNum (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         Returns the number of received characters in the receive
+**         buffer. This method is available only if the ReceiveBlock
+**         method is enabled.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @return
+**                         - The number of characters in the input
+**                           buffer.
+*/
+/* ===================================================================*/
+uint16_t SM2_GetReceivedDataNum(LDD_TDeviceData *DeviceDataPtr)
+{
+  return (((SM2_TDeviceDataPtr)DeviceDataPtr)->InpRecvDataNum); /* Return the number of received characters. */
+}
+
+/*
+** ===================================================================
+**     Method      :  SM2_GetSentDataNum (component SPIMaster_LDD)
+*/
+/*!
+**     @brief
+**         Returns the number of sent characters. This method is
+**         available only if method SendBlock is enabled.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @return
+**                         - The number of characters in the output
+**                           buffer.
+*/
+/* ===================================================================*/
+uint16_t SM2_GetSentDataNum(LDD_TDeviceData *DeviceDataPtr)
+{
+  return (((SM2_TDeviceDataPtr)DeviceDataPtr)->OutSentDataNum); /* Return the number of sent characters. */
 }
 
 /*
@@ -439,11 +549,12 @@ LDD_TError SM2_SendBlock(LDD_TDeviceData *DeviceDataPtr, LDD_TData *BufferPtr, u
 /* ===================================================================*/
 LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t ChipSelect, uint8_t AttributeSet)
 {
-  /* Chip select test - this test can be disabled by setting the "Ignore range checking"
+  /* Device state test - this test can be disabled by setting the "Ignore enable test"
      property to the "yes" value in the "Configuration inspector" */
-  if (ChipSelect >= SM2_CHIP_SELECT_COUNT) { /* Is Chip select index out of range? */
-    return ERR_PARAM_CHIP_SELECT;      /* Yes, return ERR_PARAM */
+  if (!((SM2_TDeviceDataPtr)DeviceDataPtr)->EnUser) { /* Is the device disabled by user? */
+    return ERR_DISABLED;               /* If yes then error */
   }
+  (void)ChipSelect;                    /* Parameter is not used, suppress unused argument warning */
   if (AttributeSet >= SM2_CONFIGURATION_COUNT) { /* Is Attribute set index out of range? */
     return ERR_PARAM_ATTRIBUTE_SET;    /* Yes, return ERR_PARAM */
   }
@@ -451,8 +562,8 @@ LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t ChipS
 (((SM2_TDeviceDataPtr)DeviceDataPtr)->OutDataNumReq != 0x00U)) { /* Is the previous operation pending? */
     return ERR_BUSY;                   /* If yes then error */
   }
-  SPI_PDD_SetDataFeatures(SPI1_BASE_PTR, ConfigurationSet[AttributeSet].Control1); /* Set required configuration */
-  SPI_PDD_WriteBaudRateReg(SPI1_BASE_PTR, ConfigurationSet[AttributeSet].BaudRate[0]); /* Set required configuration */
+  SPI_PDD_SetDataFeatures(SPI0_BASE_PTR, ConfigurationSet[AttributeSet].Control1); /* Set required configuration */
+  SPI_PDD_WriteBaudRateReg(SPI0_BASE_PTR, ConfigurationSet[AttributeSet].BaudRate[0]); /* Set required configuration */
   return ERR_OK;                       /* OK */
 }
 
@@ -469,16 +580,16 @@ LDD_TError SM2_SelectConfiguration(LDD_TDeviceData *DeviceDataPtr, uint8_t ChipS
 PE_ISR(SM2_Interrupt)
 {
   /* {FreeRTOS RTOS Adapter} ISR parameter is passed through the global variable */
-  SM2_TDeviceDataPtr DeviceDataPrv = INT_SPI1__BAREBOARD_RTOS_ISRPARAM;
-  uint8_t StatReg = SPI_PDD_ReadStatusReg(SPI1_BASE_PTR); /* Read status register */
+  SM2_TDeviceDataPtr DeviceDataPrv = INT_SPI0__BAREBOARD_RTOS_ISRPARAM;
+  uint8_t StatReg = SPI_PDD_ReadStatusReg(SPI0_BASE_PTR); /* Read status register */
 
   (void)DeviceDataPrv;                 /* Supress unused variable warning if needed */
   if ((StatReg & SPI_PDD_RX_BUFFER_FULL) != 0U) { /* Is any char in HW Rx buffer? */
     if (DeviceDataPrv->InpDataNumReq != 0x00U) { /* Is the receive block operation pending? */
-      *(DeviceDataPrv->InpDataPtr++) = SPI_PDD_ReadData8bit(SPI1_BASE_PTR); /* Put a character to the receive buffer and increment pointer to receive buffer */
+      *(DeviceDataPrv->InpDataPtr++) = SPI_PDD_ReadData8bit(SPI0_BASE_PTR); /* Put a character to the receive buffer and increment pointer to receive buffer */
       DeviceDataPrv->InpRecvDataNum++; /* Increment received char. counter */
       if (DeviceDataPrv->InpRecvDataNum == DeviceDataPrv->InpDataNumReq) { /* Is the requested number of characters received? */
-        SPI_PDD_DisableInterruptMask(SPI1_BASE_PTR, SPI_PDD_RX_BUFFER_FULL_OR_FAULT); /* Disable Rx buffer full interrupt */
+        SPI_PDD_DisableInterruptMask(SPI0_BASE_PTR, SPI_PDD_RX_BUFFER_FULL_OR_FAULT); /* Disable Rx buffer full interrupt */
         DeviceDataPrv->InpDataNumReq = 0x00U; /* If yes then clear number of requested characters to be received. */
         SM2_OnBlockReceived(DeviceDataPrv->UserData);
       }
@@ -486,15 +597,41 @@ PE_ISR(SM2_Interrupt)
   }
   if ((StatReg & SPI_PDD_TX_BUFFER_EMPTYG) != 0U) { /* Is HW Tx buffer empty? */
     if (DeviceDataPrv->OutSentDataNum < DeviceDataPrv->OutDataNumReq) { /* Is number of sent characters less than the number of requested incoming characters? */
-      SPI_PDD_WriteData8Bit(SPI1_BASE_PTR, (*((uint8_t *)DeviceDataPrv->OutDataPtr++))); /* Put a character with command to the transmit register and increment pointer to the transmitt buffer */
+      SPI_PDD_WriteData8Bit(SPI0_BASE_PTR, (*((uint8_t *)DeviceDataPrv->OutDataPtr++))); /* Put a character with command to the transmit register and increment pointer to the transmitt buffer */
       DeviceDataPrv->OutSentDataNum++; /* Increment the counter of sent characters. */
       if (DeviceDataPrv->OutSentDataNum == DeviceDataPrv->OutDataNumReq) {
         DeviceDataPrv->OutDataNumReq = 0x00U; /* Clear the counter of characters to be send by SendBlock() */
-        SM2_OnBlockSent(DeviceDataPrv->UserData);
       }
     } else {
-      SPI_PDD_DisableInterruptMask(SPI1_BASE_PTR, SPI_PDD_TX_BUFFER_EMPTY); /* Disable TX interrupt */
+      SPI_PDD_DisableInterruptMask(SPI0_BASE_PTR, SPI_PDD_TX_BUFFER_EMPTY); /* Disable TX interrupt */
     }
+  }
+}
+
+/*
+** ===================================================================
+**     Method      :  HWEnDi (component SPIMaster_LDD)
+**
+**     Description :
+**         Enables or disables the peripheral(s) associated with the 
+**         component. The method is called automatically as a part of the 
+**         Enable and Disable methods and several internal methods.
+**         This method is internal. It is used by Processor Expert only.
+** ===================================================================
+*/
+static void HWEnDi(LDD_TDeviceData *DeviceDataPtr)
+{
+  SM2_TDeviceData* DeviceDataPrv = (SM2_TDeviceData*)DeviceDataPtr;
+
+  if (DeviceDataPrv->EnUser) {         /* Enable device? */
+    DeviceDataPrv->OutDataNumReq = 0x00U; /* Clear the counter of requested outgoing characters. */
+    DeviceDataPrv->OutSentDataNum = 0x00U; /* Clear the counter of sent characters. */
+    DeviceDataPrv->InpDataNumReq = 0x00U; /* Clear the counter of requested incoming characters. */
+    DeviceDataPrv->InpRecvDataNum = 0x00U; /* Clear the counter of received characters. */
+    SPI_PDD_EnableDevice(SPI0_BASE_PTR,PDD_ENABLE); /* Enable device */
+  } else {
+    SPI_PDD_DisableInterruptMask(SPI0_BASE_PTR, (SPI_PDD_TX_BUFFER_EMPTY|SPI_PDD_RX_BUFFER_FULL_OR_FAULT));
+    SPI_PDD_EnableDevice(SPI0_BASE_PTR,PDD_DISABLE); /* Disable device */
   }
 }
 

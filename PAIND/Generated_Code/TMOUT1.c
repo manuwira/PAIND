@@ -4,10 +4,10 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : Timeout
-**     Version     : Component 01.030, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.035, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-18, 15:47, # CodeGen: 46
 **     Abstract    :
 **
 The module implements timeout functionality. With this implementation,
@@ -15,10 +15,12 @@ it is possible to wait for a given time, and the time is counted by
 a periodic interrupt.
 **     Settings    :
 **          Component name                                 : TMOUT1
+**          SDK                                            : KSDK1
 **          Critical Section                               : CS1
-**          Maximum counters                               : 1
+**          Maximum counters                               : 2
 **          Counter tick period (ms)                       : 10
-**          RTOS                                           : Disabled
+**          RTOS                                           : Enabled
+**            RTOS                                         : FRTOS1
 **     Contents    :
 **         GetCounter     - TMOUT1_CounterHandle TMOUT1_GetCounter(TMOUT1_CounterType nofTicks);
 **         LeaveCounter   - void TMOUT1_LeaveCounter(TMOUT1_CounterHandle handle);
@@ -29,7 +31,7 @@ a periodic interrupt.
 **         Init           - void TMOUT1_Init(void);
 **
 **     License   :  Open Source (LGPL)
-**     Copyright : (c) Copyright Erich Styger, 2011-2015, all rights reserved.
+**     Copyright : (c) Copyright Erich Styger, 2011-2016, all rights reserved.
 **     This an open source software implementing timeout routines using Processor Expert.
 **     This is a free software and is opened for education,  research  and commercial developments under license policy of following terms:
 **     * This is a free software and there is NO WARRANTY.
@@ -54,7 +56,7 @@ a periodic interrupt.
 
 #include "TMOUT1.h"
 
-#define TMOUT1_NOF_COUNTERS  1         /* number of timeout counters available */
+#define TMOUT1_NOF_COUNTERS  2         /* number of timeout counters available */
 
 static TMOUT1_CounterType TMOUT1_Counters[TMOUT1_NOF_COUNTERS]; /* array of timeout counters */
 static bool TMOUT1_FreeCounters[TMOUT1_NOF_COUNTERS]; /* array to indicate which counters are free */
@@ -163,7 +165,7 @@ bool TMOUT1_CounterExpired(TMOUT1_CounterHandle handle)
 */
 void TMOUT1_AddTick(void)
 {
-  byte i;
+  uint8_t i;
   CS1_CriticalVariable();
 
   CS1_EnterCritical();
@@ -186,7 +188,7 @@ void TMOUT1_AddTick(void)
 */
 void TMOUT1_Init(void)
 {
-  byte i;
+  uint8_t i;
 
   for(i=0;i<TMOUT1_NOF_COUNTERS;i++) {
     TMOUT1_Counters[i] = 0;

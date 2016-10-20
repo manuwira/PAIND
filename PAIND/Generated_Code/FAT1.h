@@ -4,15 +4,15 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : FAT_FileSystem
-**     Version     : Component 01.168, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.198, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:05, # CodeGen: 55
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **
 **     Settings    :
 **          Component name                                 : FAT1
-**          FatFs Version                                  : R0.10c (patch 26-Nov-14)
+**          FatFs Version                                  : R0.12 (Patch 3, 29-April-2016)
 **          Tiny                                           : no
 **          Volumes                                        : 1
 **          Drives                                         : 1
@@ -24,10 +24,11 @@
 **          File Sharing                                   : 0
 **          Multipartion                                   : no
 **          Fast Seek                                      : yes
-**          Use Erase                                      : no
+**          Use Find                                       : Disable (0)
 **          String Functions                               : disable
 **          LFN                                            : Long File Name Support
 **            Use LFN                                      : Disable
+**            exFAT                                        : no
 **            Max LFN Length                               : 255
 **            LFN Unicode                                  : no
 **          Write enabled                                  : Enabled
@@ -58,50 +59,70 @@
 **         getfree           - FRESULT FAT1_getfree(const XCHAR *path, dword *nclst, FATFS **fatfs);
 **         sync              - FRESULT FAT1_sync(FIL *fp);
 **         rename            - FRESULT FAT1_rename(const XCHAR *path_old, const XCHAR *path_new);
-**         isWriteProtected  - bool FAT1_isWriteProtected(byte *drvStr);
-**         isDiskPresent     - bool FAT1_isDiskPresent(byte *drvStr);
+**         isWriteProtected  - bool FAT1_isWriteProtected(uint8_t *drvStr);
+**         isDiskPresent     - bool FAT1_isDiskPresent(uint8_t *drvStr);
 **         mkdir             - FRESULT FAT1_mkdir(const XCHAR *path);
-**         chmod             - FRESULT FAT1_chmod(const TCHAR* FileName, byte Attribute, byte AttributeMask);
+**         chmod             - FRESULT FAT1_chmod(const TCHAR* FileName, uint8_t Attribute, uint8_t...
 **         truncate          - FRESULT FAT1_truncate(FIL *FileObject);
 **         stat              - FRESULT FAT1_stat(const TCHAR* FileName, FILINFO* FileInfo);
 **         utime             - FRESULT FAT1_utime(const TCHAR* FileName, const FILINFO* TimeDate);
-**         mkfs              - FRESULT FAT1_mkfs(byte drive, byte PartitioningRule, UINT  AllocSize);
+**         mkfs              - FRESULT FAT1_mkfs(byte drive, uint8_t PartitioningRule, UINT  AllocSize);
 **         chdir             - FRESULT FAT1_chdir(const TCHAR* Path);
-**         chdrive           - FRESULT FAT1_chdrive(byte Drive);
+**         chdrive           - FRESULT FAT1_chdrive(uint8_t Drive);
 **         getcwd            - FRESULT FAT1_getcwd(TCHAR* Buffer, UINT BufferLen);
 **         errFResultMsg     - char* FAT1_errFResultMsg(int errNo);
 **         errDResultMsg     - char* FAT1_errDResultMsg(int errNo);
 **         f_eof             - byte FAT1_f_eof(FIL *fil);
-**         f_error           - byte FAT1_f_error(FIL *fil);
+**         f_error           - uint8_t FAT1_f_error(FIL *fil);
 **         f_tell            - dword FAT1_f_tell(FIL *fil);
 **         f_size            - dword FAT1_f_size(FIL *fil);
-**         Init              - byte FAT1_Init(void);
-**         Deinit            - byte FAT1_Deinit(void);
+**         f_getlabel        - FRESULT FAT1_f_getlabel(const TCHAR* path, TCHAR* label, DWORD* vsn);
+**         f_setlabel        - FRESULT FAT1_f_setlabel(const TCHAR* label);
+**         f_expand          - FRESULT FAT1_f_expand(FIL* fp, FSIZE_t fsz, BYTE opt);
+**         f_findfirst       - FRESULT FAT1_f_findfirst(DIR* dp, FILINFO* fno, const TCHAR* path, const...
+**         f_findnext        - FRESULT FAT1_f_findnext(DIR* dp, FILINFO* fno);
 **         get_fattime       - uint32_t FAT1_get_fattime(void);
-**         ParseCommand      - byte FAT1_ParseCommand(const unsigned char *cmd, bool *handled, const...
-**         CheckCardPresence - byte FAT1_CheckCardPresence(bool *cardMounted, byte *drive, FATFS...
-**         MountFileSystem   - byte FAT1_MountFileSystem(FATFS *fileSystemObject, byte *logicalDrive, const...
-**         UnMountFileSystem - byte FAT1_UnMountFileSystem(byte *logicalDrive, const...
-**         PrintDirectory    - byte FAT1_PrintDirectory(const byte *dirName, const...
-**         CopyFile          - byte FAT1_CopyFile(const byte *srcFileName, const byte *dstFileName, const...
-**         DeleteFile        - byte FAT1_DeleteFile(const byte *fileName, const...
-**         PrintFile         - byte FAT1_PrintFile(const byte *fileName, const...
-**         MakeDirectory     - byte FAT1_MakeDirectory(const byte *dirName, const...
-**         ChangeDirectory   - byte FAT1_ChangeDirectory(const byte *dirName, const...
-**         RenameFile        - byte FAT1_RenameFile(const byte *srcFileName, const byte *dstFileName, const...
-**         PrintSector       - byte FAT1_PrintSector(byte drive, dword sectorNo, const...
-**         PrintDiskInfo     - byte FAT1_PrintDiskInfo(byte drive, const %@Shell@'ModuleName'%.StdIOType...
-**         Benchmark         - byte FAT1_Benchmark(const %@Shell@'ModuleName'%.StdIOType *io);
+**         ParseCommand      - uint8_t FAT1_ParseCommand(const unsigned char *cmd, bool *handled, const...
+**         CheckCardPresence - uint8_t FAT1_CheckCardPresence(bool *cardMounted, uint8_t *drive, FATFS...
+**         MountFileSystem   - uint8_t FAT1_MountFileSystem(FATFS *fileSystemObject, uint8_t *logicalDrive,...
+**         UnMountFileSystem - uint8_t FAT1_UnMountFileSystem(uint8_t *logicalDrive, const...
+**         PrintDirectory    - uint8_t FAT1_PrintDirectory(const uint8_t *dirName, const...
+**         CopyFile          - uint8_t FAT1_CopyFile(const uint8_t*srcFileName, const uint8_t *dstFileName,...
+**         DeleteFile        - uint8_t FAT1_DeleteFile(const uint8_t *fileName, const...
+**         CreateFile        - uint8_t FAT1_CreateFile(const uint8_t *fileName, const...
+**         PrintFile         - uint8_t FAT1_PrintFile(const uint8_t *fileName, const...
+**         PrintHexFile      - uint8_t FAT1_PrintHexFile(const uint8_t *fileName, const...
+**         MakeDirectory     - uint8_t FAT1_MakeDirectory(const uint8_t *dirName, const...
+**         ChangeDirectory   - uint8_t FAT1_ChangeDirectory(const uint8_t *dirName, const...
+**         RenameFile        - uint8_t FAT1_RenameFile(const uint8_t *srcFileName, const uint8_t...
+**         PrintSector       - uint8_t FAT1_PrintSector(uint8_t drive, uint32_t sectorNo, const...
+**         PrintDiskInfo     - uint8_t FAT1_PrintDiskInfo(uint8_t *drive, const...
+**         Benchmark         - uint8_t FAT1_Benchmark(const %@Shell@'ModuleName'%.StdIOType *io);
+**         Deinit            - uint8_t FAT1_Deinit(void);
+**         Init              - uint8_t FAT1_Init(void);
 **
-**     License   :  Open Source (LGPL)
-**     Copyright : (c) Copyright Erich Styger, 2012-2015, all rights reserved.
-**     Web       : www.mcuoneclipse.com
-**     FatFS: Copyright (C) 2014, ChaN, all right reserved. (see copyright notice and license in the FatFS implementation).
-**     This an open source software implementing an interface to the ChaN FatFS using Processor Expert.
-**     This is a free software and is opened for education,  research and commercial developments under license policy of following terms:
-**     * This is a free software and there is NO WARRANTY.
-**     * No restriction on use. You can use, modify and redistribute it for personal, non-profit or commercial product UNDER YOUR RESPONSIBILITY.
-**     * Redistributions of source code must retain the above copyright notice.
+**     Copyright (c) 2014-2016, Erich Styger
+**     Web: http://mcuoneclipse.com/
+**     SourceForge: https://sourceforge.net/projects/mcuoneclipse
+**     Git: https://github.com/ErichStyger/McuOnEclipse_PEx
+**     All rights reserved.
+**     Redistribution and use in source and binary forms, with or without modification,
+**     are permitted provided that the following conditions are met:
+**     - Redistributions of source code must retain the above copyright notice, this list
+**       of conditions and the following disclaimer.
+**     - Redistributions in binary form must reproduce the above copyright notice, this
+**       list of conditions and the following disclaimer in the documentation and/or
+**       other materials provided with the distribution.
+**     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+**     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+**     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+**     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+**     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+**     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+**     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+**     ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+**     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+**     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ** ###################################################################*/
 /*!
 ** @file FAT1.h
@@ -159,6 +180,8 @@
 #endif
 
 #define FAT1_PARSE_COMMAND_ENABLED  1  /* set to 1 if method ParseCommand() is present, 0 otherwise */
+
+#define FAT1_USE_RTOS_DYNAMIC_MEMORY  (1 && configSUPPORT_DYNAMIC_ALLOCATION)  /* 1: use RTOS dynamic memory allocation, 0: use static memory */
 
 
 
@@ -401,7 +424,7 @@
 ** ===================================================================
 */
 
-bool FAT1_isWriteProtected(byte *drvStr);
+bool FAT1_isWriteProtected(uint8_t *drvStr);
 
 /*
 ** ===================================================================
@@ -646,7 +669,7 @@ char* FAT1_errDResultMsg(int errNo);
 ** ===================================================================
 */
 
-bool FAT1_isDiskPresent(byte *drvStr);
+bool FAT1_isDiskPresent(uint8_t *drvStr);
 
 /*
 ** ===================================================================
@@ -728,7 +751,7 @@ bool FAT1_isDiskPresent(byte *drvStr);
 ** ===================================================================
 */
 
-byte FAT1_Init(void);
+uint8_t FAT1_Init(void);
 /*
 ** ===================================================================
 **     Method      :  FAT1_Init (component FAT_FileSystem)
@@ -740,7 +763,7 @@ byte FAT1_Init(void);
 ** ===================================================================
 */
 
-byte FAT1_Deinit(void);
+uint8_t FAT1_Deinit(void);
 /*
 ** ===================================================================
 **     Method      :  FAT1_Deinit (component FAT_FileSystem)
@@ -764,7 +787,7 @@ uint32_t FAT1_get_fattime(void);
 ** ===================================================================
 */
 
-byte FAT1_ParseCommand(const unsigned char *cmd, bool *handled, const CLS1_StdIOType *io);
+uint8_t FAT1_ParseCommand(const unsigned char *cmd, bool *handled, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_ParseCommand (component FAT_FileSystem)
@@ -783,7 +806,7 @@ byte FAT1_ParseCommand(const unsigned char *cmd, bool *handled, const CLS1_StdIO
 ** ===================================================================
 */
 
-byte FAT1_CheckCardPresence(bool *cardMounted, byte *drive, FATFS *fileSystemObject, const CLS1_StdIOType *io);
+uint8_t FAT1_CheckCardPresence(bool *cardMounted, uint8_t *drive, FATFS *fileSystemObject, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_CheckCardPresence (component FAT_FileSystem)
@@ -805,7 +828,7 @@ byte FAT1_CheckCardPresence(bool *cardMounted, byte *drive, FATFS *fileSystemObj
 ** ===================================================================
 */
 
-byte FAT1_MountFileSystem(FATFS *fileSystemObject, byte *logicalDrive, const CLS1_StdIOType *io);
+uint8_t FAT1_MountFileSystem(FATFS *fileSystemObject, uint8_t *logicalDrive, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_MountFileSystem (component FAT_FileSystem)
@@ -823,7 +846,7 @@ byte FAT1_MountFileSystem(FATFS *fileSystemObject, byte *logicalDrive, const CLS
 ** ===================================================================
 */
 
-byte FAT1_UnMountFileSystem(byte *logicalDrive, const CLS1_StdIOType *io);
+uint8_t FAT1_UnMountFileSystem(uint8_t *logicalDrive, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_UnMountFileSystem (component FAT_FileSystem)
@@ -839,7 +862,7 @@ byte FAT1_UnMountFileSystem(byte *logicalDrive, const CLS1_StdIOType *io);
 ** ===================================================================
 */
 
-byte FAT1_PrintDirectory(const byte *dirName, const CLS1_StdIOType *io);
+uint8_t FAT1_PrintDirectory(const uint8_t *dirName, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_PrintDirectory (component FAT_FileSystem)
@@ -854,7 +877,7 @@ byte FAT1_PrintDirectory(const byte *dirName, const CLS1_StdIOType *io);
 ** ===================================================================
 */
 
-byte FAT1_CopyFile(const byte *srcFileName, const byte *dstFileName, const CLS1_StdIOType *io);
+uint8_t FAT1_CopyFile(const uint8_t*srcFileName, const uint8_t *dstFileName, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_CopyFile (component FAT_FileSystem)
@@ -870,7 +893,7 @@ byte FAT1_CopyFile(const byte *srcFileName, const byte *dstFileName, const CLS1_
 ** ===================================================================
 */
 
-byte FAT1_DeleteFile(const byte *fileName, const CLS1_StdIOType *io);
+uint8_t FAT1_DeleteFile(const uint8_t *fileName, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_DeleteFile (component FAT_FileSystem)
@@ -885,7 +908,7 @@ byte FAT1_DeleteFile(const byte *fileName, const CLS1_StdIOType *io);
 ** ===================================================================
 */
 
-byte FAT1_PrintFile(const byte *fileName, const CLS1_StdIOType *io);
+uint8_t FAT1_PrintFile(const uint8_t *fileName, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_PrintFile (component FAT_FileSystem)
@@ -900,7 +923,7 @@ byte FAT1_PrintFile(const byte *fileName, const CLS1_StdIOType *io);
 ** ===================================================================
 */
 
-byte FAT1_MakeDirectory(const byte *dirName, const CLS1_StdIOType *io);
+uint8_t FAT1_MakeDirectory(const uint8_t *dirName, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_MakeDirectory (component FAT_FileSystem)
@@ -915,7 +938,7 @@ byte FAT1_MakeDirectory(const byte *dirName, const CLS1_StdIOType *io);
 ** ===================================================================
 */
 
-byte FAT1_ChangeDirectory(const byte *dirName, const CLS1_StdIOType *io);
+uint8_t FAT1_ChangeDirectory(const uint8_t *dirName, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_ChangeDirectory (component FAT_FileSystem)
@@ -930,7 +953,7 @@ byte FAT1_ChangeDirectory(const byte *dirName, const CLS1_StdIOType *io);
 ** ===================================================================
 */
 
-byte FAT1_RenameFile(const byte *srcFileName, const byte *dstFileName, const CLS1_StdIOType *io);
+uint8_t FAT1_RenameFile(const uint8_t *srcFileName, const uint8_t *dstFileName, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_RenameFile (component FAT_FileSystem)
@@ -946,7 +969,7 @@ byte FAT1_RenameFile(const byte *srcFileName, const byte *dstFileName, const CLS
 ** ===================================================================
 */
 
-byte FAT1_PrintSector(byte drive, dword sectorNo, const CLS1_StdIOType *io);
+uint8_t FAT1_PrintSector(uint8_t drive, uint32_t sectorNo, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_PrintSector (component FAT_FileSystem)
@@ -962,7 +985,7 @@ byte FAT1_PrintSector(byte drive, dword sectorNo, const CLS1_StdIOType *io);
 ** ===================================================================
 */
 
-byte FAT1_PrintDiskInfo(byte drive, const CLS1_StdIOType *io);
+uint8_t FAT1_PrintDiskInfo(uint8_t *drive, const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_PrintDiskInfo (component FAT_FileSystem)
@@ -970,14 +993,15 @@ byte FAT1_PrintDiskInfo(byte drive, const CLS1_StdIOType *io);
 **         Prints information about the current disk
 **     Parameters  :
 **         NAME            - DESCRIPTION
-**         drive           - drive number, starting with zero
+**       * drive           - Drive string, can be NULL or e.g.
+**                           pointing to "0"
 **         io              - Pointer to I/O handler
 **     Returns     :
 **         ---             - Error code
 ** ===================================================================
 */
 
-byte FAT1_Benchmark(const CLS1_StdIOType *io);
+uint8_t FAT1_Benchmark(const CLS1_StdIOType *io);
 /*
 ** ===================================================================
 **     Method      :  FAT1_Benchmark (component FAT_FileSystem)
@@ -986,6 +1010,123 @@ byte FAT1_Benchmark(const CLS1_StdIOType *io);
 **     Parameters  :
 **         NAME            - DESCRIPTION
 **         io              - Pointer to I/O handler
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+uint8_t FAT1_PrintHexFile(const uint8_t *fileName, const CLS1_StdIOType *io);
+/*
+** ===================================================================
+**     Method      :  FAT1_PrintHexFile (component FAT_FileSystem)
+**     Description :
+**         Prints the content of a file in hexadecimal format, useful
+**         for binary files.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         fileName        - Name of file to be printed
+**         io              - Pointer to I/O handler
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+uint8_t FAT1_CreateFile(const uint8_t *fileName, const CLS1_StdIOType *io);
+/*
+** ===================================================================
+**     Method      :  FAT1_CreateFile (component FAT_FileSystem)
+**     Description :
+**         Creates an empty file
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         fileName        - Filename of file to be created
+**         io              - Pointer to I/O handler
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+#define FAT1_f_getlabel(path, label, vsn) \
+  f_getlabel(path, label, vsn)
+/*
+** ===================================================================
+**     Method      :  FAT1_f_getlabel (component FAT_FileSystem)
+**     Description :
+**         Get volume label
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * path            - Pointer to path name of the logical
+**                           drive number
+**       * label           - Pointer to a buffer to return the
+**                           volume label
+**         vsn             - 
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+#define FAT1_f_setlabel(label) \
+  f_setlabel(label);
+/*
+** ===================================================================
+**     Method      :  FAT1_f_setlabel (component FAT_FileSystem)
+**     Description :
+**         Set Volume Label 
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * label           - Pointer to the volume label to set
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+#define FAT1_f_expand(fp, fsz, opt) \
+  f_expand(fp, fsz, opt);
+/*
+** ===================================================================
+**     Method      :  FAT1_f_expand (component FAT_FileSystem)
+**     Description :
+**         Allocate a Contiguous Blocks to the File
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * fp              - Pointer to the file object
+**         fsz             - File size to be expanded to
+**         opt             - Operation mode 0:Find and prepare or 1:
+**                           Find and allocate
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+#define FAT1_f_findfirst(dp, fno, path, pattern) \
+  f_findfirst(dp, fno, path, pattern)
+/*
+** ===================================================================
+**     Method      :  FAT1_f_findfirst (component FAT_FileSystem)
+**     Description :
+**         Find FirstFile
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         dp              - Pointer to the open directory object
+**         fno             - Pointer to the file information structure
+**         path            - Pointer to the directory to open
+**         pattern         - Pointer to the matching pattern
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+#define FAT1_f_findnext(dp, fno) \
+  f_findnext(dp, fno)
+/*
+** ===================================================================
+**     Method      :  FAT1_f_findnext (component FAT_FileSystem)
+**     Description :
+**         Find Next File
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         dp              - Pointer to the open directory object
+**         fno             - Pointer to the file information structure
 **     Returns     :
 **         ---             - Error code
 ** ===================================================================

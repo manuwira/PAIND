@@ -19,14 +19,14 @@ by the component.
 <tr><td colspan="4" class="ttitle1">SS1 Initialization</td></tr>
 <tr><td class="ttitle2">Address</td><td class="ttitle2">Register</td><td class="ttitle2">Register Value</td><td class="ttitle2">Register Description</td></tr>
 <tr><td>0x400FF114</td><td>GPIOE_PDDR</td>
-<td class="regNotResetVal">0x00000002</td>
+<td class="regNotResetVal">0x00000010</td>
  <td>GPIOE_PDDR register, peripheral SS1.</td></tr>
 <tr><td>0x400FF100</td><td>GPIOE_PDOR</td>
 <td class="regResetVal">0x00000000</td>
  <td>GPIOE_PDOR register, peripheral SS1.</td></tr>
-<tr><td>0x4004D004</td><td>PORTE_PCR1</td>
+<tr><td>0x4004D010</td><td>PORTE_PCR4</td>
 <td class="regNotResetVal">0x00000100</td>
- <td>PORTE_PCR1 register, peripheral SS1.</td></tr>
+ <td>PORTE_PCR4 register, peripheral SS1.</td></tr>
 </table>
 Color Denotes Reset Value
 <br/>
@@ -71,7 +71,7 @@ registers of the peripheral(s) configured by the component.
         
 </div>
 <table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0x400FF114</td></tr>
-<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x00000002</td></tr>
+<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x00000010</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0x00000000</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>0 - 31</td><td>PDD</td><td>0x00</td><td>Port Data Direction</td>
@@ -118,7 +118,7 @@ registers of the peripheral(s) configured by the component.
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>0 - 31</td><td>PDO</td><td>0x00</td><td>Port Data Output</td>
 </tr></table>
-<div class="reghdr1">PORTE_PCR1</div>
+<div class="reghdr1">PORTE_PCR4</div>
 <div class="regdiag">
 <table class="regtbl">
 <tr class="trd1r">
@@ -162,7 +162,7 @@ registers of the peripheral(s) configured by the component.
 </table>
         
 </div>
-<table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0x4004D004</td></tr>
+<table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0x4004D010</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x00000100</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0x00000000</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
@@ -180,7 +180,7 @@ registers of the peripheral(s) configured by the component.
 \page SS1_settings Component Settings
 \code
 **          Component name                                 : SS1
-**          Pin for I/O                                    : PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL
+**          Pin for I/O                                    : PTE4/SPI1_PCS0
 **          Pin signal                                     : SD_SS
 **          Direction                                      : Output
 **          Initialization                                 : 

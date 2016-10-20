@@ -4,10 +4,10 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : SD_Card
-**     Version     : Component 01.178, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.182, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-18, 15:47, # CodeGen: 46
 **     Abstract    :
 **         Implements interface to SD card for FatFs
 **     Settings    :
@@ -17,7 +17,7 @@
 **          Wait Ready Timeout (ms)                        : 500
 **          Wait Cmd Timeout (ms)                          : 100
 **          Receive Block Timeout (ms)                     : 500
-**          SPI Block Transfer                             : no
+**          SPI Block Transfer                             : yes
 **          Hardware                                       : 
 **            SW SPI                                       : Disabled
 **            HW SPI                                       : Enabled
@@ -33,37 +33,33 @@
 **              non-LDD SS                                 : Disabled
 **            Activate                                     : Disabled
 **            Card detection                               : Enabled
-**              Card Detect is LOW active                  : yes
+**              Card Detect is LOW active                  : no
 **              LDD CD                                     : Enabled
 **                Card detection pin                       : LDDCDI
 **              non-LDD CD                                 : Disabled
 **            Report 'Card present' if no Card detection pin: yes
-**            Write protection                             : Enabled
-**              Write Protect is LOW active                : yes
-**              LDD WP                                     : Enabled
-**                Write Protect Pin                        : LDDWP
-**              non-LDD WP                                 : Disabled
+**            Write protection                             : Disabled
 **          System                                         : 
 **            Wait                                         : WAIT1
 **            Timeout                                      : TMOUT1
 **            RTOS                                         : Disabled
 **     Contents    :
-**         Init             - byte SD1_Init(void* unused);
-**         Deinit           - byte SD1_Deinit(void* unused);
 **         Activate         - void SD1_Activate(void);
 **         Deactivate       - void SD1_Deactivate(void);
 **         isWriteProtected - bool SD1_isWriteProtected(void);
 **         CardPresent      - bool SD1_CardPresent(void);
-**         WaitReady        - byte SD1_WaitReady(void);
-**         ReceiveDataBlock - bool SD1_ReceiveDataBlock(byte *data, word nofBytes);
-**         SendDataBlock    - bool SD1_SendDataBlock(byte *data, byte token, word nofBytes);
-**         SendCmd          - byte SD1_SendCmd(byte cmd, dword arg);
+**         WaitReady        - uint8_t SD1_WaitReady(void);
+**         ReceiveDataBlock - bool SD1_ReceiveDataBlock(uint8_t *data, uint16_t nofBytes);
+**         SendDataBlock    - bool SD1_SendDataBlock(uint8_t *data, uint8_t token, uint16_t nofBytes);
+**         SendCmd          - uint8_t SD1_SendCmd(uint8_t cmd, uint32_t arg);
 **         SetSlowMode      - void SD1_SetSlowMode(void);
 **         SetFastMode      - void SD1_SetFastMode(void);
 **         InitCommChannel  - void SD1_InitCommChannel(void);
+**         Deinit           - uint8_t SD1_Deinit(void* unused);
+**         Init             - uint8_t SD1_Init(void* unused);
 **
 **     License   :  Open Source (LGPL)
-**     Copyright : (c) Copyright Erich Styger, 2012-2015, all rights reserved.
+**     Copyright : (c) Copyright Erich Styger, 2012-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software implementing an SD card low level driver useful for the the ChaN FatFS, using Processor Expert.
 **     This is a free software and is opened for education,  research and commercial developments under license policy of following terms:
@@ -96,7 +92,6 @@
 #include "SM2.h"
 #include "SS1.h"
 #include "CD1.h"
-#include "WP1.h"
 #include "WAIT1.h"
 #include "TMOUT1.h"
 /* interface for FatFS low level disk functions */
@@ -136,6 +131,7 @@ DRESULT SD1_disk_ioctl (
 /* distinguished modes for bus activation/deactivation */
 #define SD1_ACTIVATE_MODE_SLOW   0
 #define SD1_ACTIVATE_MODE_FAST   1
+#define SD1_ACTIVATE_MODE_NONE   2
 
 #define SD1_BLOCK_SIZE   512            /* user defined block size */
 
@@ -160,8 +156,8 @@ DRESULT SD1_disk_ioctl (
 #define SD1_CMD18 (0x40+18)             /* Continuously transfers data blocks from card to host until interrupted by a
                                            STOP_TRANSMISSION command.*/
 #define SD1_CMD24 (0x40+24)             /* Writes a block of the size selected by the SET_BLOCKLEN command. */
-#define SD1_CMD25 (0x40+25)             /* Continuously writes blocks of data until ï¿½Stop Tranï¿½ token is sent
-                                          (instead ï¿½Start Blockï¿½).*/
+#define SD1_CMD25 (0x40+25)             /* Continuously writes blocks of data until ’Stop Tran’ token is sent
+                                          (instead ’Start Block’).*/
 #define SD1_CMD27 (0x40+27)             /* Programming of the programmable bits of the CSD. */
 #define SD1_CMD28 (0x40+28)             /* If the card has write protection features, this command sets the write protection bit
                                            of the addressed group. The properties of write protection are coded in the card
@@ -184,15 +180,15 @@ DRESULT SD1_disk_ioctl (
                                            Memory Card, the size of the Data Block shall be defined with SET_BLOCK_LEN command.
                                            Block length of this command is fixed to 512-byte in High Capacity Card. */
 #define SD1_CMD58 (0x40+58)             /* Reads the OCR register of a card. CCS bit is assigned to OCR[30]. */
-#define SD1_CMD59 (0x40+59)             /* Turns the CRC option on or off. A ï¿½1ï¿½ in the CRC option bit will turn the option on,
-                                           a ï¿½0ï¿½ will turn it off */
+#define SD1_CMD59 (0x40+59)             /* Turns the CRC option on or off. A ‘1’ in the CRC option bit will turn the option on,
+                                           a ‘0’ will turn it off */
 #define SD1_ACMD41 (0xC0+41)            /* SEND_OP_COND (SDC) */
 #define SD1_ACMD13 (0xC0+13)            /* SD_STATUS (SDC) */
 #define SD1_ACMD23 (0xC0+23)            /* SET_WR_BLK_ERASE_COUNT (SDC) */
 
 
 
-byte SD1_Init(void* unused);
+uint8_t SD1_Init(void* unused);
 /*
 ** ===================================================================
 **     Method      :  SD1_Init (component SD_Card)
@@ -231,7 +227,7 @@ void SD1_Deactivate(void);
 */
 
 #define SD1_isWriteProtected() \
-  (bool)(WP1_GetVal(WP1_DeviceData)==0) /* low level means write protected */
+  FALSE                                 /* no hardware to detect write protection, thus none */
 
 /*
 ** ===================================================================
@@ -247,7 +243,7 @@ void SD1_Deactivate(void);
 ** ===================================================================
 */
 
-byte SD1_WaitReady(void);
+uint8_t SD1_WaitReady(void);
 /*
 ** ===================================================================
 **     Method      :  SD1_WaitReady (component SD_Card)
@@ -261,7 +257,7 @@ byte SD1_WaitReady(void);
 ** ===================================================================
 */
 
-bool SD1_ReceiveDataBlock(byte *data, word nofBytes);
+bool SD1_ReceiveDataBlock(uint8_t *data, uint16_t nofBytes);
 /*
 ** ===================================================================
 **     Method      :  SD1_ReceiveDataBlock (component SD_Card)
@@ -278,7 +274,7 @@ bool SD1_ReceiveDataBlock(byte *data, word nofBytes);
 ** ===================================================================
 */
 
-byte SD1_SendCmd(byte cmd, dword arg);
+uint8_t SD1_SendCmd(uint8_t cmd, uint32_t arg);
 /*
 ** ===================================================================
 **     Method      :  SD1_SendCmd (component SD_Card)
@@ -293,7 +289,7 @@ byte SD1_SendCmd(byte cmd, dword arg);
 ** ===================================================================
 */
 
-byte SD1_ReceiveByte(void);
+uint8_t SD1_ReceiveByte(void);
 /*
 ** ===================================================================
 **     Method      :  SD1_ReceiveByte (component SD_Card)
@@ -305,7 +301,7 @@ byte SD1_ReceiveByte(void);
 */
 
 #define SD1_CardPresent() \
-  (bool)(CD1_GetVal(CD1_DeviceData)==0) /* low level means card present */
+  (bool)(CD1_GetVal(CD1_DeviceData)!=0) /* high level means card present */
 
 /*
 ** ===================================================================
@@ -320,7 +316,7 @@ byte SD1_ReceiveByte(void);
 ** ===================================================================
 */
 
-bool SD1_SendDataBlock(byte *data, byte token, word nofBytes);
+bool SD1_SendDataBlock(uint8_t *data, uint8_t token, uint16_t nofBytes);
 /*
 ** ===================================================================
 **     Method      :  SD1_SendDataBlock (component SD_Card)
@@ -362,7 +358,7 @@ void SD1_InitCommChannel(void);
 ** ===================================================================
 */
 
-byte SD1_Deinit(void* unused);
+uint8_t SD1_Deinit(void* unused);
 /*
 ** ===================================================================
 **     Method      :  SD1_Deinit (component SD_Card)

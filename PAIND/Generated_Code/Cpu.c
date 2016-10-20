@@ -8,7 +8,7 @@
 **     Repository  : Kinetis
 **     Datasheet   : KL25P80M48SF0RM, Rev.3, Sep 2012
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:46, # CodeGen: 58
+**     Date/Time   : 2016-10-20, 09:42, # CodeGen: 64
 **     Abstract    :
 **
 **     Settings    :
@@ -23,7 +23,17 @@
 **              Fast internal reference clock [MHz]        : 4
 **              Initialize fast trim value                 : no
 **            RTC clock input                              : Disabled
-**            System oscillator 0                          : Disabled
+**            System oscillator 0                          : Enabled
+**              Clock source                               : External crystal
+**                Clock input pin                          : 
+**                  Pin name                               : EXTAL0/PTA18/UART1_RX/TPM_CLKIN0
+**                  Pin signal                             : 
+**                Clock output pin                         : 
+**                  Pin name                               : XTAL0/PTA19/UART1_TX/TPM_CLKIN1/LPTMR0_ALT1
+**                  Pin signal                             : 
+**                Clock frequency [MHz]                    : 8
+**                Capacitor load                           : 0pF
+**                Oscillator operating mode                : Low power
 **            Clock source settings                        : 1
 **              Clock source setting 0                     : 
 **                Internal reference clock                 : 
@@ -34,28 +44,29 @@
 **                External reference clock                 : 
 **                  OSC0ERCLK clock                        : Enabled
 **                  OSC0ERCLK in stop                      : Disabled
-**                  OSC0ERCLK clock [MHz]                  : 0
+**                  OSC0ERCLK clock [MHz]                  : 8
 **                  ERCLK32K clock source                  : Auto select
 **                  ERCLK32K. clock [MHz]                  : 0.001
 **                MCG settings                             : 
-**                  MCG mode                               : FEI
-**                  MCG output clock                       : FLL clock
-**                  MCG output [MHz]                       : 20.97152
-**                  MCG external ref. clock [MHz]          : 0
+**                  MCG mode                               : PEE
+**                  MCG output clock                       : PLL clock
+**                  MCG output [MHz]                       : 96
+**                  MCG external ref. clock [MHz]          : 8
 **                  Clock monitor                          : Disabled
 **                  FLL settings                           : 
-**                    FLL module                           : Enabled
-**                    FLL output [MHz]                     : 20.97152
-**                    MCGFFCLK clock [kHz]                 : 32.768
-**                    Reference clock source               : Slow internal clock
-**                    FLL reference clock [kHz]            : 32.768
+**                    FLL module                           : Disabled
+**                    FLL output [MHz]                     : 0
+**                    MCGFFCLK clock [kHz]                 : 31.25
+**                    Reference clock source               : External clock
+**                      Reference clock divider            : Auto select
+**                    FLL reference clock [kHz]            : 31.25
 **                    Multiplication factor                : Auto select
 **                  PLL 0 settings                         : 
-**                    PLL module                           : Disabled
-**                    PLL module in Stop                   : Disabled
-**                    PLL output [MHz]                     : 0
+**                    PLL module                           : Enabled
+**                    PLL module in Stop                   : Enabled
+**                    PLL output [MHz]                     : 96
 **                    Reference clock divider              : Auto select
-**                    PLL reference clock [MHz]            : 1
+**                    PLL reference clock [MHz]            : 4
 **                    Multiplication factor                : Auto select
 **                    Loss of lock interrupt               : Disabled
 **          Initialization priority                        : interrupts enabled
@@ -180,21 +191,21 @@
 **              __RTC_CLKIN                                : 0.032768
 **              Very low power mode                        : Disabled
 **              Clock source setting                       : configuration 0
-**                MCG mode                                 : FEI
-**                MCG output [MHz]                         : 20.97152
+**                MCG mode                                 : PEE
+**                MCG output [MHz]                         : 96
 **                MCGIRCLK clock [MHz]                     : 0.032768
-**                OSCERCLK clock [MHz]                     : 0
+**                OSCERCLK clock [MHz]                     : 8
 **                ERCLK32K. clock [MHz]                    : 0.001
-**                MCGFFCLK [kHz]                           : 32.768
+**                MCGFFCLK [kHz]                           : 31.25
 **              System clocks                              : 
 **                Core clock prescaler                     : Auto select
-**                Core clock                               : 20.97152
+**                Core clock                               : 48
 **                Bus clock prescaler                      : Auto select
-**                Bus clock                                : 20.97152
+**                Bus clock                                : 24
 **                PLL/FLL clock selection                  : Auto select
-**                  Clock frequency [MHz]                  : 20.97152
+**                  Clock frequency [MHz]                  : 48
 **                TPM clock selection                      : Auto select
-**                  Clock frequency [MHz]                  : 20.97152
+**                  Clock frequency [MHz]                  : 48
 **     Contents    :
 **         No public methods
 **
@@ -263,16 +274,12 @@
 #include "Bein_R.h"
 #include "Pwm6.h"
 #include "PwmLdd6.h"
-#include "FRTOS1.h"
 #include "CS1.h"
 #include "HF1.h"
 #include "KSDK1.h"
 #include "AS1.h"
 #include "ASerialLdd1.h"
 #include "UTIL1.h"
-#include "SYS1.h"
-#include "RTT1.h"
-#include "CLS1.h"
 #include "Buzzer.h"
 #include "BitIoLdd1.h"
 #include "Switch_A.h"
@@ -290,25 +297,17 @@
 #include "AdcLdd1.h"
 #include "Switch_B.h"
 #include "BitIoLdd6.h"
-#include "RF1.h"
-#include "CE1.h"
-#include "BitIoLdd7.h"
-#include "CSN1.h"
-#include "BitIoLdd8.h"
-#include "SM1.h"
-#include "SMasterLdd1.h"
 #include "TRIG.h"
+#include "TU3.h"
 #include "TMOUT1.h"
+#include "FAT1.h"
 #include "SD1.h"
 #include "SS1.h"
 #include "CD1.h"
-#include "WP1.h"
-#include "FAT1.h"
-#include "TmDt1.h"
-#include "TimeDateLdd1.h"
-#include "TU2.h"
 #include "SM2.h"
-#include "TU3.h"
+#include "TmDt1.h"
+#include "CLS1.h"
+#include "FRTOS1.h"
 #include "PE_Types.h"
 #include "PE_Error.h"
 #include "PE_Const.h"
@@ -380,16 +379,18 @@ void __init_hardware(void)
                SIM_SCGC5_PORTC_MASK |
                SIM_SCGC5_PORTB_MASK |
                SIM_SCGC5_PORTA_MASK;   /* Enable clock gate for ports to enable pin routing */
-  /* SIM_SCGC5: LPTMR=1 */
-  SIM_SCGC5 |= SIM_SCGC5_LPTMR_MASK;
   if ((PMC_REGSC & PMC_REGSC_ACKISO_MASK) != 0x0U) {
     /* PMC_REGSC: ACKISO=1 */
     PMC_REGSC |= PMC_REGSC_ACKISO_MASK; /* Release IO pads after wakeup from VLLS mode. */
   }
-  /* SIM_CLKDIV1: OUTDIV1=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0 */
-  SIM_CLKDIV1 = (SIM_CLKDIV1_OUTDIV1(0x00) | SIM_CLKDIV1_OUTDIV4(0x00)); /* Update system prescalers */
-  /* SIM_SOPT2: ??=0,PLLFLLSEL=0 */
-  SIM_SOPT2 &= (uint32_t)~(uint32_t)((SIM_SOPT2_PLLFLLSEL_MASK | 0x00020000U)); /* Select FLL as a clock source for various peripherals */
+  /* SIM_CLKDIV1: OUTDIV1=1,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,OUTDIV4=1,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0 */
+  SIM_CLKDIV1 = (SIM_CLKDIV1_OUTDIV1(0x01) | SIM_CLKDIV1_OUTDIV4(0x01)); /* Update system prescalers */
+  /* SIM_SOPT2: ??=0,PLLFLLSEL=1 */
+  SIM_SOPT2 = (uint32_t)((SIM_SOPT2 & (uint32_t)~(uint32_t)(
+               0x00020000U
+              )) | (uint32_t)(
+               SIM_SOPT2_PLLFLLSEL_MASK
+              ));                      /* Select PLL as a clock source for various peripherals */
   /* SIM_SOPT1: OSC32KSEL=3 */
   SIM_SOPT1 |= SIM_SOPT1_OSC32KSEL(0x03); /* LPO 1kHz oscillator drives 32 kHz clock for various peripherals */
   /* SIM_SOPT2: TPMSRC=1 */
@@ -398,25 +399,38 @@ void __init_hardware(void)
               )) | (uint32_t)(
                SIM_SOPT2_TPMSRC(0x01)
               ));                      /* Set the TPM clock */
-  /* Switch to FEI Mode */
-  /* MCG_C1: CLKS=0,FRDIV=0,IREFS=1,IRCLKEN=1,IREFSTEN=0 */
-  MCG_C1 = MCG_C1_CLKS(0x00) |
-           MCG_C1_FRDIV(0x00) |
-           MCG_C1_IREFS_MASK |
-           MCG_C1_IRCLKEN_MASK;
-  /* MCG_C2: LOCRE0=0,??=0,RANGE0=0,HGO0=0,EREFS0=0,LP=0,IRCS=0 */
-  MCG_C2 = MCG_C2_RANGE0(0x00);
-  /* MCG_C4: DMX32=0,DRST_DRS=0 */
-  MCG_C4 &= (uint8_t)~(uint8_t)((MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x03)));
+  /* PORTA_PCR18: ISF=0,MUX=0 */
+  PORTA_PCR18 &= (uint32_t)~(uint32_t)((PORT_PCR_ISF_MASK | PORT_PCR_MUX(0x07)));
+  /* PORTA_PCR19: ISF=0,MUX=0 */
+  PORTA_PCR19 &= (uint32_t)~(uint32_t)((PORT_PCR_ISF_MASK | PORT_PCR_MUX(0x07)));
+  /* Switch to FBE Mode */
+  /* MCG_C2: LOCRE0=0,??=0,RANGE0=2,HGO0=0,EREFS0=1,LP=0,IRCS=0 */
+  MCG_C2 = (MCG_C2_RANGE0(0x02) | MCG_C2_EREFS0_MASK);
   /* OSC0_CR: ERCLKEN=1,??=0,EREFSTEN=0,??=0,SC2P=0,SC4P=0,SC8P=0,SC16P=0 */
   OSC0_CR = OSC_CR_ERCLKEN_MASK;
-  /* MCG_C5: ??=0,PLLCLKEN0=0,PLLSTEN0=0,PRDIV0=0 */
-  MCG_C5 = MCG_C5_PRDIV0(0x00);
+  /* MCG_C1: CLKS=2,FRDIV=3,IREFS=0,IRCLKEN=1,IREFSTEN=0 */
+  MCG_C1 = (MCG_C1_CLKS(0x02) | MCG_C1_FRDIV(0x03) | MCG_C1_IRCLKEN_MASK);
+  /* MCG_C4: DMX32=0,DRST_DRS=0 */
+  MCG_C4 &= (uint8_t)~(uint8_t)((MCG_C4_DMX32_MASK | MCG_C4_DRST_DRS(0x03)));
+  /* MCG_C5: ??=0,PLLCLKEN0=0,PLLSTEN0=1,PRDIV0=1 */
+  MCG_C5 = (MCG_C5_PLLSTEN0_MASK | MCG_C5_PRDIV0(0x01));
   /* MCG_C6: LOLIE0=0,PLLS=0,CME0=0,VDIV0=0 */
   MCG_C6 = MCG_C6_VDIV0(0x00);
-  while((MCG_S & MCG_S_IREFST_MASK) == 0x00U) { /* Check that the source of the FLL reference clock is the internal reference clock. */
+  while((MCG_S & MCG_S_IREFST_MASK) != 0x00U) { /* Check that the source of the FLL reference clock is the external reference clock. */
   }
-  while((MCG_S & 0x0CU) != 0x00U) {    /* Wait until output of the FLL is selected */
+  while((MCG_S & 0x0CU) != 0x08U) {    /* Wait until external reference clock is selected as MCG output */
+  }
+  /* Switch to PBE Mode */
+  /* MCG_C6: LOLIE0=0,PLLS=1,CME0=0,VDIV0=0 */
+  MCG_C6 = (MCG_C6_PLLS_MASK | MCG_C6_VDIV0(0x00));
+  while((MCG_S & 0x0CU) != 0x08U) {    /* Wait until external reference clock is selected as MCG output */
+  }
+  while((MCG_S & MCG_S_LOCK0_MASK) == 0x00U) { /* Wait until locked */
+  }
+  /* Switch to PEE Mode */
+  /* MCG_C1: CLKS=0,FRDIV=3,IREFS=0,IRCLKEN=1,IREFSTEN=0 */
+  MCG_C1 = (MCG_C1_CLKS(0x00) | MCG_C1_FRDIV(0x03) | MCG_C1_IRCLKEN_MASK);
+  while((MCG_S & 0x0CU) != 0x0CU) {    /* Wait until output of the PLL is selected */
   }
   /*** End of PE initialization code after reset ***/
 
@@ -507,6 +521,8 @@ void PE_low_level_init(void)
   (void)PwmLdd4_Init(NULL);
   /* ### Servo "Knie_R" init code ... */
   Knie_R_Init();
+  /* ### KinetisSDK "KSDK1" init code ... */
+  /* Write code here ... */
   /* ### PWM_LDD "PwmLdd5" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
   (void)PwmLdd5_Init(NULL);
   /* ### Servo "Bein_L" init code ... */
@@ -515,25 +531,11 @@ void PE_low_level_init(void)
   (void)PwmLdd6_Init(NULL);
   /* ### Servo "Bein_R" init code ... */
   Bein_R_Init();
-  /* ### KinetisSDK "KSDK1" init code ... */
-  /* Write code here ... */
-  /* ### SeggerRTT "RTT1" init code ... */
-  RTT1_Init();
-  /* ### SeggerSystemView "SYS1" init code ... */
-  SYS1_Init();
   /* ### CriticalSection "CS1" init code ... */
-  /* ### Asynchro serial "AS1" init code ... */
-  AS1_Init();
-  /* ### Shell "CLS1" init code ... */
-  CLS1_Init(); /* initialize shell */
-  /* ### FreeRTOS "FRTOS1" init code ... */
-#if configSYSTICK_USE_LOW_POWER_TIMER
-  /* enable clocking for low power timer, otherwise vPortStopTickTimer() will crash */
-  SIM_PDD_SetClockGate(SIM_BASE_PTR, SIM_PDD_CLOCK_GATE_LPTMR0, PDD_ENABLE);
-#endif
-  vPortStopTickTimer(); /* tick timer shall not run until the RTOS scheduler is started */
   /* ### HardFault "HF1" init code ... */
   /* Write code here ... */
+  /* ### Asynchro serial "AS1" init code ... */
+  AS1_Init();
   /* ### BitIO_LDD "BitIoLdd1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
   (void)BitIoLdd1_Init(NULL);
   /* ### BitIO_LDD "BitIoLdd3" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
@@ -554,13 +556,16 @@ void PE_low_level_init(void)
   ANALOG_IN_Init();
   /* ### BitIO_LDD "BitIoLdd6" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
   (void)BitIoLdd6_Init(NULL);
-  /* ### SynchroMaster "SM1" init code ... */
-  SM1_Init();
-  /* ### BitIO_LDD "BitIoLdd7" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
-  (void)BitIoLdd7_Init(NULL);
-  /* ### BitIO_LDD "BitIoLdd8" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
-  (void)BitIoLdd8_Init(NULL);
-  /* ### nRF24L01 "RF1" init code ... */
+  /* ### BitIO_LDD "TRIG" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
+  (void)TRIG_Init(NULL);
+  /* ### Shell "CLS1" init code ... */
+  CLS1_Init(); /* initialize shell */
+  /* ### FreeRTOS "FRTOS1" init code ... */
+#if configSYSTICK_USE_LOW_POWER_TIMER
+  /* enable clocking for low power timer, otherwise vPortStopTickTimer() will crash */
+  SIM_PDD_SetClockGate(SIM_BASE_PTR, SIM_PDD_CLOCK_GATE_LPTMR0, PDD_ENABLE);
+#endif
+  vPortStopTickTimer(); /* tick timer shall not run until the RTOS scheduler is started */
   /* ### Timeout "TMOUT1" init code ... */
   TMOUT1_Init();
   /* ### SPIMaster_LDD "SM2" component auto initializatation. Auto initialization feature can be disabled by component's property "Auto initialization". */
@@ -569,11 +574,9 @@ void PE_low_level_init(void)
   (void)SS1_Init(NULL);
   /* ### BitIO_LDD "CD1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
   (void)CD1_Init(NULL);
-  /* ### BitIO_LDD "WP1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
-  (void)WP1_Init(NULL);
   /* ### SD_Card "SD1" init code ... */
-  /* ### TimeDate_LDD "TimeDateLdd1" component auto initialization. Auto initialization feature can be disabled by component property "Auto initialization". */
-  (void)TimeDateLdd1_Init(NULL);
+  /* ### GenericTimeDate "TmDt1" init code ... */
+  TmDt1_Init();
   /* ### FAT_FileSystem "FAT1" init code ... */
 }
   /* Flash configuration field */

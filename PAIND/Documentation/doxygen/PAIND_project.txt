@@ -37,17 +37,11 @@
 - \subpage BitIoLdd5
 - \subpage AdcLdd1
 - \subpage BitIoLdd6
-- \subpage SMasterLdd1
-- \subpage BitIoLdd7
-- \subpage BitIoLdd8
 - \subpage TRIG
+- \subpage TU3
 - \subpage SM2
 - \subpage SS1
 - \subpage CD1
-- \subpage WP1
-- \subpage TU2
-- \subpage TimeDateLdd1
-- \subpage TU3
 
 */
 

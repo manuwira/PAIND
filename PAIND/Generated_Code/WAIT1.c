@@ -4,14 +4,15 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : Wait
-**     Version     : Component 01.067, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.069, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **          Implements busy waiting routines.
 **     Settings    :
 **          Component name                                 : WAIT1
+**          SDK                                            : KSDK1
 **          Manual Clock Values                            : Disabled
 **          Delay100usFunction                             : Delay100US
 **          RTOS                                           : Disabled
@@ -27,7 +28,7 @@
 **         WaitOSms       - void WAIT1_WaitOSms(void);
 **
 **     License   : Open Source (LGPL)
-**     Copyright : Erich Styger, 2013-2015, all rights reserved.
+**     Copyright : Erich Styger, 2013-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software implementing waiting routines using Processor Expert.
 **     This is a free software and is opened for education,  research  and commercial developments under license policy of following terms:
@@ -91,9 +92,9 @@ __attribute__((naked, no_instrument_function)) void WAIT1_Wait100Cycles(void)
   /*lint -save -e522 function lacks side effect. */
   __asm (
    /* bl to here:               [4] */
+   "push {r0}   \n\t"        /* [2] */
    "movs r0, #0 \n\t"        /* [1] */
    "loop:       \n\t"
-   "nop         \n\t"        /* [1] */
    "nop         \n\t"        /* [1] */
    "nop         \n\t"        /* [1] */
    "nop         \n\t"        /* [1] */
@@ -102,6 +103,13 @@ __attribute__((naked, no_instrument_function)) void WAIT1_Wait100Cycles(void)
    "cmp r0,#9   \n\t"        /* [1] */
    "bls loop    \n\t"        /* [3] taken, [1] not taken */
    "nop         \n\t"        /* [1] */
+   "nop         \n\t"        /* [1] */
+   "nop         \n\t"        /* [1] */
+   "nop         \n\t"        /* [1] */
+   "nop         \n\t"        /* [1] */
+   "nop         \n\t"        /* [1] */
+   "nop         \n\t"        /* [1] */
+   "pop {r0}    \n\t"        /* [2] */
    "bx lr       \n\t"        /* [3] */
   );
   /*lint -restore */

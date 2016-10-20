@@ -4,19 +4,20 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : HardFault
-**     Version     : Component 01.008, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.010, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **          Component to simplify hard faults for ARM/Kinetis.
 **     Settings    :
 **          Component name                                 : HF1
+**          SDK                                            : KSDK1
 **     Contents    :
 **         HardFaultHandler - void HF1_HardFaultHandler(void);
 **
 **     License   : Open Source (LGPL)
-**     Copyright : Erich Styger, 2013, all rights reserved.
+**     Copyright : Erich Styger, 2013-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software for Processor Expert.
 **     This is a free software and is opened for education, research and commercial developments under license policy of following terms:
@@ -57,7 +58,7 @@
  * The function ends with a BKPT instruction to force control back into the debugger
  */
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-void HF1_HandlerC(dword *hardfault_args)
+void HF1_HandlerC(uint32_t *hardfault_args)
 {
   /*lint -save  -e550 Symbol not accessed. */
   static volatile unsigned long stacked_r0;
@@ -104,6 +105,17 @@ void HF1_HandlerC(dword *hardfault_args)
   /* Bus Fault Address Register */
   _BFAR = (*((volatile unsigned long *)(0xE000ED38)));
 
+#if 0 /* experimental, seems not to work properly with GDB in KDS V3.2.0 */
+#ifdef __GNUC__ /* might improve stack, see https://www.element14.com/community/message/199113/l/gdb-assisted-debugging-of-hard-faults#199113 */
+  __asm volatile (
+      "tst lr,#4     \n" /* check which stack pointer we are using */
+      "ite eq        \n"
+      "mrseq r0, msp \n" /* use MSP */
+      "mrsne r0, psp \n" /* use PSP */
+      "mov sp, r0    \n" /* set stack pointer so GDB shows proper stack frame */
+  );
+#endif
+#endif
   __asm("BKPT #0\n") ; /* cause the debugger to stop */
   /*lint -restore */
 }
@@ -119,7 +131,11 @@ void HF1_HandlerC(dword *hardfault_args)
 */
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
 __attribute__((naked))
+#if KSDK1_SDK_VERSION_USED != KSDK1_SDK_VERSION_NONE
+void HardFault_Handler(void)
+#else
 void HF1_HardFaultHandler(void)
+#endif
 {
   __asm volatile (
     " movs r0,#4      \n"  /* load bit mask into R0 */

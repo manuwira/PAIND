@@ -18,7 +18,7 @@ by the component.
 <td class="regNotResetVal">0x0D000001</td>
  <td>SIM_SCGC6 register, peripheral TU3.</td></tr>
 <tr><td>0x4003A000</td><td>TPM2_SC</td>
-<td class="regNotResetVal">0x0000004B</td>
+<td class="regNotResetVal">0x0000004C</td>
  <td>TPM2_SC register, peripheral TU3.</td></tr>
 <tr><td>0x4003A004</td><td>TPM2_CNT</td>
 <td class="regResetVal">0x00000000</td>
@@ -32,14 +32,14 @@ by the component.
 <tr><td>0x4003A008</td><td>TPM2_MOD</td>
 <td class="regResetVal">0x0000FFFF</td>
  <td>TPM2_MOD register, peripheral TU3.</td></tr>
-<tr><td>0x4004D058</td><td>PORTE_PCR22</td>
+<tr><td>0x4004A008</td><td>PORTB_PCR2</td>
 <td class="regNotResetVal">0x00000300</td>
- <td>PORTE_PCR22 register, peripheral TU3.</td></tr>
+ <td>PORTB_PCR2 register, peripheral TU3.</td></tr>
 <tr><td>0xE000E410</td><td>NVIC_IPR4</td>
-<td class="regNotResetVal">0x80008000</td>
+<td class="regNotResetVal">0x80000000</td>
  <td>NVIC_IPR4 register, peripheral TU3.</td></tr>
 <tr><td>0xE000E100</td><td>NVIC_ISER</td>
-<td class="regNotResetVal">0x100A9C00</td>
+<td class="regNotResetVal">0x00089000</td>
  <td>NVIC_ISER register, peripheral TU3.</td></tr>
 </table>
 Color Denotes Reset Value
@@ -154,7 +154,7 @@ registers of the peripheral(s) configured by the component.
         
 </div>
 <table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0x4003A000</td></tr>
-<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x0000004B</td></tr>
+<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x0000004C</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0x00000000</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>8</td><td>DMA</td><td>0x00</td><td>DMA Enable</td>
@@ -162,7 +162,7 @@ registers of the peripheral(s) configured by the component.
 <tr><td>6</td><td>TOIE</td><td>0x01</td><td>Timer Overflow Interrupt Enable</td>
 <tr><td>5</td><td>CPWMS</td><td>0x00</td><td>Center-aligned PWM Select</td>
 <tr><td>3 - 4</td><td>CMOD</td><td>0x00</td><td>Clock Mode Selection</td>
-<tr><td>0 - 2</td><td>PS</td><td>0x00</td><td>Prescale Factor Selection</td>
+<tr><td>0 - 2</td><td>PS</td><td>0x04</td><td>Prescale Factor Selection</td>
 </tr></table>
 <div class="reghdr1">TPM2_CNT</div>
 <div class="regdiag">
@@ -374,7 +374,7 @@ registers of the peripheral(s) configured by the component.
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>0 - 15</td><td>MOD</td><td>0x8000</td><td>Modulo value</td>
 </tr></table>
-<div class="reghdr1">PORTE_PCR22</div>
+<div class="reghdr1">PORTB_PCR2</div>
 <div class="regdiag">
 <table class="regtbl">
 <tr class="trd1r">
@@ -418,7 +418,7 @@ registers of the peripheral(s) configured by the component.
 </table>
         
 </div>
-<table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0x4004D058</td></tr>
+<table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0x4004A008</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x00000300</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0x00000000</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
@@ -468,12 +468,12 @@ registers of the peripheral(s) configured by the component.
         
 </div>
 <table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0xE000E410</td></tr>
-<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x80008000</td></tr>
+<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x80000000</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0x00000000</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>24 - 31</td><td>PRI_19</td><td>0x80</td><td>Priority of interrupt 20</td>
 <tr><td>16 - 23</td><td>PRI_18</td><td>0x00</td><td>Priority of interrupt 19</td>
-<tr><td>8 - 15</td><td>PRI_17</td><td>0x80</td><td>Priority of interrupt 18</td>
+<tr><td>8 - 15</td><td>PRI_17</td><td>0x00</td><td>Priority of interrupt 18</td>
 <tr><td>0 - 7</td><td>PRI_16</td><td>0x00</td><td>Priority of interrupt 17</td>
 </tr></table>
 <div class="reghdr1">NVIC_ISER</div>
@@ -513,7 +513,7 @@ registers of the peripheral(s) configured by the component.
         
 </div>
 <table class="regtbl2"><tr><td class="trowtit" colspan="2">Address</td><td colspan="2">0xE000E100</td></tr>
-<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x100A9C00</td></tr>
+<tr class="trowtit"><td  class="trowtit" colspan="2">Initial value</td><td colspan="2">0x00089000</td></tr>
 <tr class="trowtit"><td  class="trowtit" colspan="2">After-reset value</td><td colspan="2">0x00000000</td></tr>
 <tr><td class="ttitle2">Bit</td><td class="ttitle2">Field</td><td class="ttitle2">Value</td><td class="ttitle2">Description</td></tr>
 <tr><td>0 - 31</td><td>SETENA</td><td>0x00</td><td>Interrupt set enable bits</td>
@@ -529,9 +529,9 @@ registers of the peripheral(s) configured by the component.
 **          Counter width                                  : 16 bits
 **          Value type                                     : Optimal
 **          Input clock source                             : Internal
-**            Counter frequency                            : 2.62144 MHz
+**            Counter frequency                            : 3 MHz
 **          Counter restart                                : On-overrun
-**            Overrun period                               : 25 ms
+**            Overrun period                               : 21.845333 ms
 **            Interrupt                                    : Enabled
 **              Interrupt                                  : INT_TPM2
 **              Interrupt priority                         : medium priority
@@ -539,10 +539,10 @@ registers of the peripheral(s) configured by the component.
 **            Channel 0                                    : 
 **              Mode                                       : Capture
 **                Capture                                  : TPM2_C0V
-**                Capture input pin                        : ADC0_DP3/ADC0_SE3/PTE22/TPM2_CH0/UART2_TX
+**                Capture input pin                        : ADC0_SE12/TSI0_CH7/PTB2/I2C0_SCL/TPM2_CH0
 **                Capture input signal                     : US_Echo_D2
 **                Edge                                     : both edges
-**                Maximum time of event                    : 25.00001792 ms
+**                Maximum time of event                    : 21.845311488 ms
 **                Interrupt                                : Enabled
 **                  Interrupt                              : INT_TPM2
 **                  Interrupt priority                     : medium priority

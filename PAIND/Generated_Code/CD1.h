@@ -7,7 +7,7 @@
 **     Version     : Component 01.033, Driver 01.03, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-18, 15:47, # CodeGen: 46
 **     Abstract    :
 **         The HAL BitIO component provides a low level API for unified
 **         access to general purpose digital input/output pins across
@@ -17,7 +17,7 @@
 **         portable to various microprocessors.
 **     Settings    :
 **          Component name                                 : CD1
-**          Pin for I/O                                    : ADC0_DM3/ADC0_SE7a/PTE23/TPM2_CH1/UART2_RX
+**          Pin for I/O                                    : ADC0_SE6b/PTD5/SPI1_SCK/UART2_TX/TPM0_CH5
 **          Pin signal                                     : SD_CD
 **          Direction                                      : Input
 **          Initialization                                 : 
@@ -100,7 +100,7 @@ extern "C" {
 
 
 /*! Peripheral base address of a device allocated by the component. This constant can be used directly in PDD macros. */
-#define CD1_PRPH_BASE_ADDRESS  0x400FF100U
+#define CD1_PRPH_BASE_ADDRESS  0x400FF0C0U
   
 /*! Device data structure pointer used when auto initialization property is enabled. This constant can be passed as a first parameter to all component's methods. */
 #define CD1_DeviceData  ((LDD_TDeviceData *)PE_LDD_GetDeviceStructure(PE_LDD_COMPONENT_CD1_ID))
@@ -111,9 +111,9 @@ extern "C" {
 #define CD1_GetVal_METHOD_ENABLED      /*!< GetVal method of the component CD1 is enabled (generated) */
 
 /* Definition of implementation constants */
-#define CD1_MODULE_BASE_ADDRESS FPTE_BASE_PTR /*!< Name of macro used as the base address */
-#define CD1_PORTCONTROL_BASE_ADDRESS PORTE_BASE_PTR /*!< Name of macro used as the base address */
-#define CD1_PORT_MASK 0x00800000U      /*!< Mask of the allocated pin from the port */
+#define CD1_MODULE_BASE_ADDRESS FPTD_BASE_PTR /*!< Name of macro used as the base address */
+#define CD1_PORTCONTROL_BASE_ADDRESS PORTD_BASE_PTR /*!< Name of macro used as the base address */
+#define CD1_PORT_MASK 0x20U            /*!< Mask of the allocated pin from the port */
 
 
 

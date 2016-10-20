@@ -28,6 +28,7 @@
 
 #include "Cpu.h"
 #include "Events.h"
+#include "Ultrasonic.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,7 +52,7 @@ extern "C" {
 /* ===================================================================*/
 void Cpu_OnNMIINT(void)
 {
-  /* Write your code here ... */
+  US_EventEchoOverflow(NULL);
 }
 
 /*
@@ -69,7 +70,7 @@ void Cpu_OnNMIINT(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void FRTOS1_vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
+void FRTOS1_vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName)
 {
   /* This will get called if a stack overflow is detected during the context
      switch.  Set configCHECK_FOR_STACK_OVERFLOWS to 2 to also check for stack
@@ -96,27 +97,8 @@ void FRTOS1_vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
 */
 void FRTOS1_vApplicationTickHook(void)
 {
-  /* Called for every RTOS tick. */
-  /* Write your code here ... */
-}
-
-/*
-** ===================================================================
-**     Event       :  FRTOS1_vApplicationIdleHook (module Events)
-**
-**     Component   :  FRTOS1 [FreeRTOS]
-**     Description :
-**         If enabled, this hook will be called when the RTOS is idle.
-**         This might be a good place to go into low power mode.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void FRTOS1_vApplicationIdleHook(void)
-{
-  /* Called whenever the RTOS is idle (from the IDLE task).
-     Here would be a good place to put the CPU into low power mode. */
-  /* Write your code here ... */
+	  TMOUT1_AddTick();
+	  TmDt1_AddTick();
 }
 
 /*
@@ -183,22 +165,6 @@ void ANALOG_IN_OnCalibrationEnd(void)
 
 /*
 ** ===================================================================
-**     Event       :  RF1_OnInterrupt (module Events)
-**
-**     Component   :  RF1 [nRF24L01]
-**     Description :
-**         Called in case of an interrupt from the transcevier
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-void RF1_OnInterrupt(void)
-{
-  /* write your code here */
-}
-
-/*
-** ===================================================================
 **     Event       :  TU1_OnChannel0 (module Events)
 **
 **     Component   :  TU1 [TimerUnit_LDD]
@@ -218,29 +184,7 @@ void RF1_OnInterrupt(void)
 /* ===================================================================*/
 void TU1_OnChannel0(LDD_TUserData *UserDataPtr)
 {
-  /* Write your code here ... */
-}
 
-/*
-** ===================================================================
-**     Event       :  SM2_OnBlockSent (module Events)
-**
-**     Component   :  SM2 [SPIMaster_LDD]
-*/
-/*!
-**     @brief
-**         This event is called after the last character from the
-**         output buffer is moved to the transmitter. This event is
-**         available only if the SendBlock method is enabled.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. The pointer is passed
-**                           as the parameter of Init method. 
-*/
-/* ===================================================================*/
-void SM2_OnBlockSent(LDD_TUserData *UserDataPtr)
-{
-  /* Write your code here ... */
 }
 
 /*
@@ -264,7 +208,7 @@ void SM2_OnBlockSent(LDD_TUserData *UserDataPtr)
 /* ===================================================================*/
 void TU3_OnCounterRestart(LDD_TUserData *UserDataPtr)
 {
-  /* Write your code here ... */
+	US_EventEchoOverflow(UserDataPtr);
 }
 
 /*
@@ -288,7 +232,7 @@ void TU3_OnCounterRestart(LDD_TUserData *UserDataPtr)
 /* ===================================================================*/
 void TU3_OnChannel0(LDD_TUserData *UserDataPtr)
 {
-  /* Write your code here ... */
+	US_EventEchoCapture(UserDataPtr);
 }
 
 /* END Events */

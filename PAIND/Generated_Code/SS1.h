@@ -7,7 +7,7 @@
 **     Version     : Component 01.033, Driver 01.03, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-18, 15:12, # CodeGen: 44
 **     Abstract    :
 **         The HAL BitIO component provides a low level API for unified
 **         access to general purpose digital input/output pins across
@@ -17,7 +17,7 @@
 **         portable to various microprocessors.
 **     Settings    :
 **          Component name                                 : SS1
-**          Pin for I/O                                    : PTE1/SPI1_MOSI/UART1_RX/SPI1_MISO/I2C1_SCL
+**          Pin for I/O                                    : PTE4/SPI1_PCS0
 **          Pin signal                                     : SD_SS
 **          Direction                                      : Output
 **          Initialization                                 : 
@@ -119,7 +119,7 @@ extern "C" {
 /* Definition of implementation constants */
 #define SS1_MODULE_BASE_ADDRESS FPTE_BASE_PTR /*!< Name of macro used as the base address */
 #define SS1_PORTCONTROL_BASE_ADDRESS PORTE_BASE_PTR /*!< Name of macro used as the base address */
-#define SS1_PORT_MASK 0x02U            /*!< Mask of the allocated pin from the port */
+#define SS1_PORT_MASK 0x10U            /*!< Mask of the allocated pin from the port */
 
 
 

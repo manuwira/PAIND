@@ -3,84 +3,49 @@
 **     Filename    : TmDt1.h
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
-**     Component   : TimeDate
-**     Version     : Component 02.111, Driver 01.00, CPU db: 3.00.000
-**     Repository  : Kinetis
+**     Component   : GenericTimeDate
+**     Version     : Component 01.028, Driver 01.00, CPU db: 3.00.000
+**     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:05, # CodeGen: 55
+**     Date/Time   : 2016-10-18, 15:47, # CodeGen: 46
 **     Abstract    :
-**         This component "TimeDate" implements real time and date.
-**         The component requires a periodic interrupt generator: timer
-**         compare or reload register or timer-overflow interrupt
-**         (of free running counter). User can select precision of
-**         selected timer.
-**         The component supports also alarm with event OnAlarm.
+**         Software date/time module.
 **     Settings    :
 **          Component name                                 : TmDt1
-**          Periodic interrupt source                      : LPTMR0_CMR
-**          Counter                                        : LPTMR0_CNR
-**          Interrupt service/event                        : Enabled
-**            Interrupt                                    : INT_LPTMR0
-**            Interrupt priority                           : medium priority
-**          Resolution                                     : 10 ms
-**          Component uses entire timer                    : no
-**          Initialization                                 : 
-**            Enabled in init. code                        : yes
-**            Time                                         : 00:00:00
-**            Date                                         : 2008-01-01
-**          CPU clock/speed selection                      : 
-**            High speed mode                              : This component enabled
-**            Low speed mode                               : This component disabled
-**            Slow speed mode                              : This component disabled
-**          Referenced components                          : 
-**            TimeDate_LDD                                 : TimeDate_LDD
+**          Critical Section                               : CS1
+**          SDK                                            : KSDK1
+**          Tick Time (ms)                                 : 10
+**          RTOS                                           : Enabled
+**            RTOS                                         : FRTOS1
+**          Shell                                          : Enabled
+**            Utility                                      : UTIL1
+**            Shell                                        : CLS1
+**          Initialization                                 : Enabled
+**            Init in startup                              : yes
+**            Date                                         : 2013-01-01
+**            Time                                         : 17:51:31
 **     Contents    :
-**         SetTime - byte TmDt1_SetTime(byte Hour, byte Min, byte Sec, byte Sec100);
-**         GetTime - byte TmDt1_GetTime(TIMEREC *Time);
-**         SetDate - byte TmDt1_SetDate(word Year, byte Month, byte Day);
-**         GetDate - byte TmDt1_GetDate(DATEREC *Date);
+**         AddTick      - void TmDt1_AddTick(void);
+**         AddTicks     - void TmDt1_AddTicks(uint16_t nofTicks);
+**         TicksToTime  - uint8_t TmDt1_TicksToTime(uint32_t ticks, TIMEREC *Time);
+**         TimeToTicks  - uint8_t TmDt1_TimeToTicks(TIMEREC *Time, uint32_t *ticks);
+**         SetTime      - uint8_t TmDt1_SetTime(uint8_t Hour, uint8_t Min, uint8_t Sec, uint8_t Sec100);
+**         GetTime      - uint8_t TmDt1_GetTime(TIMEREC *Time);
+**         SetDate      - uint8_t TmDt1_SetDate(uint16_t Year, uint8_t Month, uint8_t Day);
+**         GetDate      - uint8_t TmDt1_GetDate(DATEREC *Date);
+**         ParseCommand - uint8_t TmDt1_ParseCommand(const unsigned char *cmd, bool *handled, const...
+**         Init         - void TmDt1_Init(void);
+**         DeInit       - void TmDt1_DeInit(void);
 **
-**     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
-**     All Rights Reserved.
-**     
-**     Redistribution and use in source and binary forms, with or without modification,
-**     are permitted provided that the following conditions are met:
-**     
-**     o Redistributions of source code must retain the above copyright notice, this list
-**       of conditions and the following disclaimer.
-**     
-**     o Redistributions in binary form must reproduce the above copyright notice, this
-**       list of conditions and the following disclaimer in the documentation and/or
-**       other materials provided with the distribution.
-**     
-**     o Neither the name of Freescale Semiconductor, Inc. nor the names of its
-**       contributors may be used to endorse or promote products derived from this
-**       software without specific prior written permission.
-**     
-**     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-**     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-**     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-**     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-**     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-**     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-**     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-**     ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-**     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-**     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**     
+**     (c) Copyright Freescale Semiconductor, 2014
 **     http: www.freescale.com
-**     mail: support@freescale.com
+**     Source code is based on the original TimeDate Processor Expert component.
 ** ###################################################################*/
 /*!
 ** @file TmDt1.h
 ** @version 01.00
 ** @brief
-**         This component "TimeDate" implements real time and date.
-**         The component requires a periodic interrupt generator: timer
-**         compare or reload register or timer-overflow interrupt
-**         (of free running counter). User can select precision of
-**         selected timer.
-**         The component supports also alarm with event OnAlarm.
+**         Software date/time module.
 */         
 /*!
 **  @addtogroup TmDt1_module TmDt1 module documentation
@@ -91,40 +56,49 @@
 #define __TmDt1_H
 
 /* MODULE TmDt1. */
-
-/* Include shared modules, which are used for whole project */
-#include "PE_Types.h"
-#include "PE_Error.h"
-#include "PE_Const.h"
-#include "IO_Map.h"
 /* Include inherited beans */
-#include "TimeDateLdd1.h"
+#include "CS1.h"
+#include "KSDK1.h"
+#include "FRTOS1.h"
+#include "UTIL1.h"
+#include "CLS1.h"
 
-#include "Cpu.h"
-#include <limits.h>
+#if KSDK1_SDK_VERSION_USED == KSDK1_SDK_VERSION_NONE
+/* Include shared modules, which are used for whole project */
+  #include "PE_Types.h"
+  #include "PE_Error.h"
+  #include "PE_Const.h"
+  #include "IO_Map.h"
+  #include "Cpu.h"
+#endif
 
+#define TmDt1_PARSE_COMMAND_ENABLED  1  /* set to 1 if method ParseCommand() is present, 0 otherwise */
 
 #ifndef __BWUserType_TIMEREC
 #define __BWUserType_TIMEREC
-  typedef struct { /* It contains actual number of hours, minutes, seconds and hundreths of seconds. */
-    byte Hour; /* hours (0 - 23) */
-    byte Min; /* minutes (0 - 59) */
-    byte Sec; /* seconds (0 - 59) */
-    byte Sec100; /* hundredths of seconds (0 - h99) */
+  typedef struct {                     /* It contains actual number of hours, minutes, seconds and hundreth of seconds. */
+    uint8_t Hour;                      /* hours (0 - 23) */
+    uint8_t Min;                       /* minutes (0 - 59) */
+    uint8_t Sec;                       /* seconds (0 - 59) */
+    uint8_t Sec100;                    /* hundredth of seconds (0 - 99) */
   } TIMEREC;
 #endif
 #ifndef __BWUserType_DATEREC
 #define __BWUserType_DATEREC
-  typedef struct { /* It contains actual year, month, and day description. */
-    word Year; /* years (1998 - 2099) */
-    byte Month; /* months (1 - 12) */
-    byte Day; /* days (0 - 6) */
+  typedef struct {                     /* It contains actual year, month, and day description. */
+    uint16_t Year;                     /* years (1998 - 2099) */
+    uint8_t Month;                     /* months (1 - 12) */
+    uint8_t Day;                       /* days (1 - 31) */
   } DATEREC;
 #endif
 
+
+
+
+uint8_t TmDt1_SetTime(uint8_t Hour, uint8_t Min, uint8_t Sec, uint8_t Sec100);
 /*
 ** ===================================================================
-**     Method      :  TmDt1_SetTime (component TimeDate)
+**     Method      :  TmDt1_SetTime (component GenericTimeDate)
 **     Description :
 **         This method sets a new actual time.
 **     Parameters  :
@@ -132,79 +106,157 @@
 **         Hour            - Hours (0 - 23)
 **         Min             - Minutes (0 - 59)
 **         Sec             - Seconds (0 - 59)
-**         Sec100          - Hundredths of seconds (0 - 99)
+**         Sec100          - Hundredth of seconds (0 - 99)
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
-**                           ERR_RANGE - Parameter out of range
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_SetTime(byte Hour,byte Min,byte Sec,byte Sec100);
 
+void TmDt1_AddTick(void);
 /*
 ** ===================================================================
-**     Method      :  TmDt1_GetTime (component TimeDate)
+**     Method      :  TmDt1_AddTick (component GenericTimeDate)
+**     Description :
+**         Needs to be called periodically by the application to
+**         increase the time tick count.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+uint8_t TmDt1_GetTime(TIMEREC *Time);
+/*
+** ===================================================================
+**     Method      :  TmDt1_GetTime (component GenericTimeDate)
 **     Description :
 **         This method returns current time.
 **     Parameters  :
 **         NAME            - DESCRIPTION
 **       * Time            - Pointer to the structure TIMEREC. It
 **                           contains actual number of hours, minutes,
-**                           seconds and hundredths of seconds.
+**                           seconds and hundredth of seconds.
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_GetTime(TIMEREC *Time);
 
+uint8_t TmDt1_SetDate(uint16_t Year, uint8_t Month, uint8_t Day);
 /*
 ** ===================================================================
-**     Method      :  TmDt1_SetDate (component TimeDate)
+**     Method      :  TmDt1_SetDate (component GenericTimeDate)
 **     Description :
-**         This method sets a new actual date. See limitations at the
-**         page <General Info>.
+**         This method sets a new actual date.
 **     Parameters  :
 **         NAME            - DESCRIPTION
 **         Year            - Years (16-bit unsigned integer)
 **         Month           - Months (8-bit unsigned integer)
 **         Day             - Days (8-bit unsigned integer)
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
-**                           ERR_RANGE - Parameter out of range
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_SetDate(word Year,byte Month,byte Day);
 
+uint8_t TmDt1_GetDate(DATEREC *Date);
 /*
 ** ===================================================================
-**     Method      :  TmDt1_GetDate (component TimeDate)
+**     Method      :  TmDt1_GetDate (component GenericTimeDate)
 **     Description :
 **         This method returns current date.
 **     Parameters  :
 **         NAME            - DESCRIPTION
-**       * Date            - Pointer to the structure DATEREC. It
-**                           contains actual year, month, and day
-**                           description.
+**       * Date            - Pointer to DATEREC
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_GetDate(DATEREC *Date);
+
+void TmDt1_Init(void);
+/*
+** ===================================================================
+**     Method      :  TmDt1_Init (component GenericTimeDate)
+**     Description :
+**         Initialization method
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+uint8_t TmDt1_ParseCommand(const unsigned char *cmd, bool *handled, const CLS1_StdIOType *io);
+/*
+** ===================================================================
+**     Method      :  TmDt1_ParseCommand (component GenericTimeDate)
+**     Description :
+**         Shell Command Line parser
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * cmd             - Pointer to command line
+**       * handled         - Pointer to variable which tells if
+**                           the command has been handled or not
+**       * io              - Pointer to I/O structure
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+void TmDt1_DeInit(void);
+/*
+** ===================================================================
+**     Method      :  TmDt1_DeInit (component GenericTimeDate)
+**     Description :
+**         Deinitializes the driver.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+void TmDt1_AddTicks(uint16_t nofTicks);
+/*
+** ===================================================================
+**     Method      :  TmDt1_AddTicks (component GenericTimeDate)
+**     Description :
+**         Same as AddTick(), but multiple ticks can be added in one
+**         step.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         nofTicks        - Number of ticks to be added
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+uint8_t TmDt1_TicksToTime(uint32_t ticks, TIMEREC *Time);
+/*
+** ===================================================================
+**     Method      :  TmDt1_TicksToTime (component GenericTimeDate)
+**     Description :
+**         Transforms ticks into time information
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         ticks           - 
+**       * Time            - Pointer where to store the time
+**                           information
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+
+uint8_t TmDt1_TimeToTicks(TIMEREC *Time, uint32_t *ticks);
+/*
+** ===================================================================
+**     Method      :  TmDt1_TimeToTicks (component GenericTimeDate)
+**     Description :
+**         Transforms time information into ticks
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * Time            - Pointer where to time information
+**       * ticks           - Pointer to where to store the ticks
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
 
 /* END TmDt1. */
 
-#endif 
+#endif
 /* ifndef __TmDt1_H */
 /*!
 ** @}

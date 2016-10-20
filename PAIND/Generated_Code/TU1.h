@@ -7,7 +7,7 @@
 **     Version     : Component 01.164, Driver 01.11, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-20, 09:44, # CodeGen: 65
 **     Abstract    :
 **          This TimerUnit component provides a low level API for unified hardware access across
 **          various timer devices using the Prescaler-Counter-Compare-Capture timer structure.
@@ -34,9 +34,7 @@
 **                  Initial state                          : Low
 **                  Output pin                             : PTD0/SPI0_PCS0/TPM0_CH0
 **                  Output pin signal                      : 
-**                Interrupt                                : Enabled
-**                  Interrupt                              : INT_TPM0
-**                  Interrupt priority                     : medium priority
+**                Interrupt                                : Disabled
 **            Channel 1                                    : 
 **              Mode                                       : Compare
 **                Compare                                  : TPM0_C3V
@@ -92,7 +90,7 @@
 **            Auto initialization                          : no
 **            Event mask                                   : 
 **              OnCounterRestart                           : Disabled
-**              OnChannel0                                 : Enabled
+**              OnChannel0                                 : Disabled
 **              OnChannel1                                 : Disabled
 **              OnChannel2                                 : Disabled
 **              OnChannel3                                 : Disabled
@@ -187,19 +185,19 @@ extern "C" {
 #define __BWUserType_TU1_TValueType
   typedef uint16_t TU1_TValueType ;    /* Type for data parameters of methods */
 #endif
-#define TU1_CNT_INP_FREQ_U_0 0x00280000UL /* Counter input frequency in Hz */
-#define TU1_CNT_INP_FREQ_R_0 2621438.120953155F /* Counter input frequency in Hz */
+#define TU1_CNT_INP_FREQ_U_0 0x002DC6C0UL /* Counter input frequency in Hz */
+#define TU1_CNT_INP_FREQ_R_0 3000003.000003F /* Counter input frequency in Hz */
 #define TU1_CNT_INP_FREQ_COUNT 0U      /* Count of predefined counter input frequencies */
-#define TU1_PERIOD_TICKS   0xCCCDUL    /* Initialization value of period in 'counter ticks' */
+#define TU1_PERIOD_TICKS   0xEA60UL    /* Initialization value of period in 'counter ticks' */
 #define TU1_NUMBER_OF_CHANNELS 0x06U   /* Count of predefined channels */
 #define TU1_COUNTER_WIDTH  0x10U       /* Counter width in bits  */
 #define TU1_COUNTER_DIR    DIR_UP      /* Direction of counting */
-#define TU1_OFFSET_0_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 0 */
-#define TU1_OFFSET_1_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 1 */
-#define TU1_OFFSET_2_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 2 */
-#define TU1_OFFSET_3_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 3 */
-#define TU1_OFFSET_4_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 4 */
-#define TU1_OFFSET_5_TICKS 0x0F5Cul    /* Initialization value of offset as 'counter ticks' for channel 5 */
+#define TU1_OFFSET_0_TICKS 0x1194ul    /* Initialization value of offset as 'counter ticks' for channel 0 */
+#define TU1_OFFSET_1_TICKS 0x1194ul    /* Initialization value of offset as 'counter ticks' for channel 1 */
+#define TU1_OFFSET_2_TICKS 0x1194ul    /* Initialization value of offset as 'counter ticks' for channel 2 */
+#define TU1_OFFSET_3_TICKS 0x1194ul    /* Initialization value of offset as 'counter ticks' for channel 3 */
+#define TU1_OFFSET_4_TICKS 0x1194ul    /* Initialization value of offset as 'counter ticks' for channel 4 */
+#define TU1_OFFSET_5_TICKS 0x1194ul    /* Initialization value of offset as 'counter ticks' for channel 5 */
 /*! Peripheral base address of a device allocated by the component. This constant can be used directly in PDD macros. */
 #define TU1_PRPH_BASE_ADDRESS  0x40038000U
   
@@ -215,7 +213,6 @@ extern "C" {
 #define TU1_SelectOutputAction_METHOD_ENABLED /*!< SelectOutputAction method of the component TU1 is enabled (generated) */
 
 /* Events configuration constants - generated for all enabled component's events */
-#define TU1_OnChannel0_EVENT_ENABLED   /*!< OnChannel0 event of the component TU1 is enabled (generated) */
 
 
 
@@ -455,19 +452,6 @@ LDD_TError TU1_GetOffsetTicks(LDD_TDeviceData *DeviceDataPtr, uint8_t ChannelIdx
 */
 /* ===================================================================*/
 LDD_TError TU1_SelectOutputAction(LDD_TDeviceData *DeviceDataPtr, uint8_t ChannelIdx, LDD_TimerUnit_TOutAction CompareAction, LDD_TimerUnit_TOutAction CounterAction);
-
-/*
-** ===================================================================
-**     Method      :  TU1_Interrupt (component TimerUnit_LDD)
-**
-**     Description :
-**         The method services the interrupt of the selected peripheral(s)
-**         and eventually invokes event(s) of the component.
-**         This method is internal. It is used by Processor Expert only.
-** ===================================================================
-*/
-/* {FreeRTOS RTOS Adapter} ISR function prototype */
-PE_ISR(TU1_Interrupt);
 
 /* END TU1. */
 

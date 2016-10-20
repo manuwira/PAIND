@@ -6,7 +6,7 @@
 **     Version     : Component 01.025, Driver 01.04, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:46, # CodeGen: 58
+**     Date/Time   : 2016-10-20, 09:42, # CodeGen: 64
 **     Abstract    :
 **
 **     Settings    :
@@ -81,16 +81,12 @@
 #include "Bein_R.h"
 #include "Pwm6.h"
 #include "PwmLdd6.h"
-#include "FRTOS1.h"
 #include "CS1.h"
 #include "HF1.h"
 #include "KSDK1.h"
 #include "AS1.h"
 #include "ASerialLdd1.h"
 #include "UTIL1.h"
-#include "SYS1.h"
-#include "RTT1.h"
-#include "CLS1.h"
 #include "Buzzer.h"
 #include "BitIoLdd1.h"
 #include "Switch_A.h"
@@ -108,25 +104,17 @@
 #include "AdcLdd1.h"
 #include "Switch_B.h"
 #include "BitIoLdd6.h"
-#include "RF1.h"
-#include "CE1.h"
-#include "BitIoLdd7.h"
-#include "CSN1.h"
-#include "BitIoLdd8.h"
-#include "SM1.h"
-#include "SMasterLdd1.h"
 #include "TRIG.h"
+#include "TU3.h"
 #include "TMOUT1.h"
+#include "FAT1.h"
 #include "SD1.h"
 #include "SS1.h"
 #include "CD1.h"
-#include "WP1.h"
-#include "FAT1.h"
-#include "TmDt1.h"
-#include "TimeDateLdd1.h"
-#include "TU2.h"
 #include "SM2.h"
-#include "TU3.h"
+#include "TmDt1.h"
+#include "CLS1.h"
+#include "FRTOS1.h"
 
 
 /*

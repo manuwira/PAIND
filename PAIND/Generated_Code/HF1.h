@@ -4,19 +4,20 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : HardFault
-**     Version     : Component 01.008, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.010, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **          Component to simplify hard faults for ARM/Kinetis.
 **     Settings    :
 **          Component name                                 : HF1
+**          SDK                                            : KSDK1
 **     Contents    :
 **         HardFaultHandler - void HF1_HardFaultHandler(void);
 **
 **     License   : Open Source (LGPL)
-**     Copyright : Erich Styger, 2013, all rights reserved.
+**     Copyright : Erich Styger, 2013-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software for Processor Expert.
 **     This is a free software and is opened for education, research and commercial developments under license policy of following terms:
@@ -39,15 +40,17 @@
 #define __HF1_H
 
 /* MODULE HF1. */
-
-/* Include shared modules, which are used for whole project */
-#include "PE_Types.h"
-#include "PE_Error.h"
-#include "PE_Const.h"
-#include "IO_Map.h"
 /* Include inherited beans */
+#include "KSDK1.h"
 
-#include "Cpu.h"
+#if KSDK1_SDK_VERSION_USED == KSDK1_SDK_VERSION_NONE
+/* Include shared modules, which are used for whole project */
+  #include "PE_Types.h"
+  #include "PE_Error.h"
+  #include "PE_Const.h"
+  #include "IO_Map.h"
+  #include "Cpu.h"
+#endif
 
 
 
@@ -64,9 +67,9 @@ void HF1_HardFaultHandler(void);
 */
 
 #ifdef __GNUC__ /* 'used' attribute needed for GNU LTO (Link Time Optimization) */
-void HF1_HandlerC(dword *hardfault_args) __attribute__((used));
+void HF1_HandlerC(uint32_t *hardfault_args);
 #else
-void HF1_HandlerC(dword *hardfault_args);
+void HF1_HandlerC(uint32_t *hardfault_args);
 #endif
 /*
 ** ===================================================================

@@ -4,15 +4,16 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : FreeRTOS
-**     Version     : Component 01.451, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.508, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-18, 16:22, # CodeGen: 51
 **     Abstract    :
 **          This component implements the FreeRTOS Realtime Operating System
 **     Settings    :
 **          Component name                                 : FRTOS1
-**          RTOS Version                                   : V8.2.3
+**          RTOS Version                                   : V9.0.0
+**          Kinetis SDK                                    : KSDK1
 **          Kinetis SDK                                    : Disabled
 **          Custom Port                                    : Custom port settings
 **            Compiler                                     : automatic
@@ -20,21 +21,20 @@
 **            Custom portBASE_TYPE                         : Disabled
 **          Classic CodeWarrior                            : no
 **          Disabled Interrupts in Startup                 : yes
-**          configASSERT defined                           : yes
+**          configASSERT                                   : yes
 **          Enable GDB Debug Helper                        : no
 **          Application Task Tags                          : no
 **          Thread Local Storage Pointers                  : 0
 **          Use Trace Facility                             : yes
-**          Segger System Viewer Trace                     : Enabled
-**            Segger System Viewer                         : SYS1
+**          Segger System Viewer Trace                     : Disabled
 **          Percepio Trace                                 : Disabled
-**          Collect Runtime Statistics                     : Disabled
+**          Generate Runtime Statistics                    : Disabled
 **          Scheduler                                      : Settings for the scheduler
 **            ColdFire V1                                  : Disabled
 **            ColdFire V2                                  : Disabled
 **            Kinetis                                      : Enabled
 **              ARM Family                                 : Cortex-M0+
-**              Max SysCall Interrupt Priority             : 2
+**              Max SysCall Interrupt Priority             : 1
 **              RTOS Interrupt Priority                    : 3
 **              Lowest Interrupt Priority                  : 3
 **              Compiler Optimization Level                : 0
@@ -47,7 +47,7 @@
 **            Use Co-Routines                              : no
 **            Idle should yield                            : yes
 **            Task Name Length                             : 12
-**            Minimal Stack Size                           : 200
+**            Minimal Stack Size                           : 300
 **            Maximum Priorities                           : 6
 **            Maximum Coroutine Priorities                 : 2
 **            Stackoverflow checking method                : Method 1
@@ -55,136 +55,151 @@
 **            TaskExitError Handler                        : no
 **          Ticks                                          : Settings for the periodic tick timer
 **            Tickless Idle Mode                           : Disabled
-**            Tick Rate (Hz)                               : 1000
+**            Tick Rate (Hz)                               : 100
 **            Use 16bit ticks                              : no
 **            non-LDD Tick                                 : Disabled
 **            LDD Tick                                     : Disabled
 **          Queues                                         : Settings for Queues
-**            Queue Registry Size                          : 6
+**            Queue Registry Size                          : 0
 **            Queue Sets                                   : no
 **          Semaphores and Mutexes                         : Settings for Mutex and Semaphore
 **            Use Mutexes                                  : yes
 **            Use Recursive Mutexes                        : yes
 **          Timers                                         : Disabled
 **          Memory                                         : Settings for the memory and heap allocation
-**            Application allocated Heap                   : no
-**            Memory Allocation Scheme                     : Scheme 4: merge free blocks
-**            User Heap Section                            : Disabled
-**            Total Heap Size                              : 8192
-**          Memory allocation                              : Configures how memory is allocated and deallocated.
-**            User function for memory allocation          : no
-**            User function for memory deallocation        : no
-**          Critical section                               : Configures how critical sections are handled.
-**            User function for entering critical section  : no
-**            User function for exiting critical section   : no
+**            Dynamic Allocation                           : Enabled
+**              Heap Size                                  : 8192
+**              Application allocated Heap                 : no
+**              Memory Allocation Scheme                   : Scheme 2: no merge
+**            Static Allocation                            : Disabled
+**            User Memory Section                          : Disabled
+**          RTOS Adaptor                                   : Configures the RTOS adapter settings
+**            Memory allocation                            : Configures how memory is allocated and deallocated.
+**              User function for memory allocation        : no
+**              User function for memory deallocation      : no
+**            Critical section                             : Configures how critical sections are handled.
+**              User function for entering critical section: no
+**              User function for exiting critical section : no
 **          Shell                                          : Enabled
+**            Max number of tasks                          : 16
 **            Shell                                        : CLS1
 **          Utility                                        : UTIL1
 **     Contents    :
-**         xTaskCreate                        - portBASE_TYPE FRTOS1_xTaskCreate(pdTASK_CODE pvTaskCode, const portCHAR *...
-**         vTaskDelete                        - void FRTOS1_vTaskDelete(xTaskHandle pxTask);
-**         vTaskStartScheduler                - void FRTOS1_vTaskStartScheduler(void);
-**         vTaskSuspend                       - void FRTOS1_vTaskSuspend(xTaskHandle pxTaskToSuspend);
-**         vTaskSuspendAll                    - void FRTOS1_vTaskSuspendAll(void);
-**         vTaskResume                        - void FRTOS1_vTaskResume(xTaskHandle pxTaskToResume);
-**         xTaskResumeAll                     - portBASE_TYPE FRTOS1_xTaskResumeAll(void);
-**         xTaskResumeFromISR                 - portBASE_TYPE FRTOS1_xTaskResumeFromISR(xTaskHandle pxTaskToResume);
-**         taskYIELD                          - void FRTOS1_taskYIELD(void);
-**         taskENTER_CRITICAL                 - void FRTOS1_taskENTER_CRITICAL(void);
-**         taskEXIT_CRITICAL                  - void FRTOS1_taskEXIT_CRITICAL(void);
-**         taskDISABLE_INTERRUPTS             - void FRTOS1_taskDISABLE_INTERRUPTS(void);
-**         taskENABLE_INTERRUPTS              - void FRTOS1_taskENABLE_INTERRUPTS(void);
-**         vTaskDelay                         - void FRTOS1_vTaskDelay(portTickType xTicksToDelay);
-**         vTaskDelayUntil                    - void FRTOS1_vTaskDelayUntil(portTickType *pxPreviousWakeTime, portTickType...
-**         uxTaskPriorityGet                  - unsigned_portBASE_TYPE FRTOS1_uxTaskPriorityGet(xTaskHandle pxTask);
-**         vTaskPrioritySet                   - void FRTOS1_vTaskPrioritySet(xTaskHandle pxTask, unsigned_portBASE_TYPE...
-**         xTaskGetTickCount                  - portTickType FRTOS1_xTaskGetTickCount(void);
-**         xTaskGetTickCountFromISR           - portTickType FRTOS1_xTaskGetTickCountFromISR(void);
-**         xSemaphoreCreateRecursiveMutex     - xSemaphoreHandle FRTOS1_xSemaphoreCreateRecursiveMutex(void);
-**         xSemaphoreTakeRecursive            - bool FRTOS1_xSemaphoreTakeRecursive(xSemaphoreHandle xMutex, portTickType...
-**         xSemaphoreGiveRecursive            - bool FRTOS1_xSemaphoreGiveRecursive(xSemaphoreHandle xMutex);
-**         xSemaphoreCreateMutex              - xSemaphoreHandle FRTOS1_xSemaphoreCreateMutex(void);
-**         xSemaphoreTake                     - bool FRTOS1_xSemaphoreTake(xSemaphoreHandle xMutex, portTickType xBlockTime);
-**         xSemaphoreGive                     - bool FRTOS1_xSemaphoreGive(xSemaphoreHandle xMutex);
-**         vSemaphoreCreateBinary             - void FRTOS1_vSemaphoreCreateBinary(xSemaphoreHandle xSemaphore);
-**         xSemaphoreCreateBinary             - SemaphoreHandle_t FRTOS1_xSemaphoreCreateBinary(void);
-**         xSemaphoreCreateCounting           - xSemaphoreHandle FRTOS1_xSemaphoreCreateCounting(unsigned_portBASE_TYPE...
-**         xSemaphoreGiveFromISR              - bool FRTOS1_xSemaphoreGiveFromISR(xSemaphoreHandle xSemaphore,...
-**         xSemaphoreTakeFromISR              - bool FRTOS1_xSemaphoreTakeFromISR(xSemaphoreHandle xSemaphore,...
-**         vSemaphoreDelete                   - void FRTOS1_vSemaphoreDelete(xSemaphoreHandle xSemaphore);
-**         xSemaphoreGetMutexHolder           - void* FRTOS1_xSemaphoreGetMutexHolder(xSemaphoreHandle xSemaphore);
-**         pvPortMalloc                       - pVoid FRTOS1_pvPortMalloc(size_t xWantedSize);
-**         vPortFree                          - void FRTOS1_vPortFree(void *pv);
-**         xPortGetFreeHeapSize               - Tsize_t FRTOS1_xPortGetFreeHeapSize(void);
-**         xTaskGetCurrentTaskHandle          - xTaskHandle FRTOS1_xTaskGetCurrentTaskHandle(void);
-**         xTaskGetIdleTaskHandle             - xTaskHandle FRTOS1_xTaskGetIdleTaskHandle(void);
-**         pcTaskGetTaskName                  - signed char FRTOS1_pcTaskGetTaskName(xTaskHandle xTaskToQuery);
-**         xTaskGetSchedulerState             - portBASE_TYPE FRTOS1_xTaskGetSchedulerState(void);
-**         vTaskList                          - void FRTOS1_vTaskList(signed portCHAR *pcWriteBuffer, size_t bufSize);
-**         uxTaskGetStackHighWaterMark        - unsigned_portBASE_TYPE FRTOS1_uxTaskGetStackHighWaterMark(xTaskHandle xTask);
-**         uxTaskGetNumberOfTasks             - unsigned_portBASE_TYPE FRTOS1_uxTaskGetNumberOfTasks(void);
-**         uxQueueMessagesWaiting             - unsigned_portBASE_TYPE FRTOS1_uxQueueMessagesWaiting(xQueueHandle xQueue);
-**         uxQueueMessagesWaitingfromISR      - unsigned_portBASE_TYPE FRTOS1_uxQueueMessagesWaitingfromISR(xQueueHandle...
-**         xQueueCreate                       - xQueueHandle FRTOS1_xQueueCreate(unsigned_portBASE_TYPE uxQueueLength,...
-**         vQueueDelete                       - void FRTOS1_vQueueDelete(xQueueHandle pxQueueToDelete);
-**         xQueueReset                        - portBASE_TYPE FRTOS1_xQueueReset(xQueueHandle xQueue);
-**         xQueueSendToBack                   - portBASE_TYPE FRTOS1_xQueueSendToBack(xQueueHandle xQueue, const void...
-**         xQueueSendToFront                  - portBASE_TYPE FRTOS1_xQueueSendToFront(xQueueHandle xQueue, const void...
-**         xQueueReceive                      - portBASE_TYPE FRTOS1_xQueueReceive(xQueueHandle xQueue, void *pvBuffer,...
-**         xQueueOverwrite                    - portBASE_TYPE FRTOS1_xQueueOverwrite(xQueueHandle xQueue, const void...
-**         xQueueOverwriteFromISR             - portBASE_TYPE FRTOS1_xQueueOverwriteFromISR(xQueueHandle xQueue, const void...
-**         xQueuePeek                         - portBASE_TYPE FRTOS1_xQueuePeek(xQueueHandle xQueue, void *pvBuffer,...
-**         xQueuePeekFromISR                  - portBASE_TYPE FRTOS1_xQueuePeekFromISR(xQueueHandle xQueue, void *pvBuffer,...
-**         xQueueSendToBackFromISR            - portBASE_TYPE FRTOS1_xQueueSendToBackFromISR(xQueueHandle xQueue, const void...
-**         xQueueSendToFrontFromISR           - portBASE_TYPE FRTOS1_xQueueSendToFrontFromISR(xQueueHandle xQueue, const void...
-**         xQueueReceiveFromISR               - portBASE_TYPE FRTOS1_xQueueReceiveFromISR(xQueueHandle xQueue, void...
-**         vQueueAddToRegistry                - void FRTOS1_vQueueAddToRegistry(xQueueHandle xQueue, char *pcQueueName);
-**         vQueueUnregisterQueue              - void FRTOS1_vQueueUnregisterQueue(xQueueHandle xQueue);
-**         xQueueIsQueueFullFromISR           - portBASE_TYPE FRTOS1_xQueueIsQueueFullFromISR(xQueueHandle xQueue);
-**         xQueueIsQueueEmptyFromISR          - portBASE_TYPE FRTOS1_xQueueIsQueueEmptyFromISR(xQueueHandle xQueue);
-**         xEventGroupCreate                  - EventGroupHandle_t FRTOS1_xEventGroupCreate(void);
-**         xEventGroupWaitBits                - byte FRTOS1_xEventGroupWaitBits(const EventGroupHandle_t xEventGroup, const...
-**         xEventGroupSetBits                 - EventBits_t FRTOS1_xEventGroupSetBits(EventGroupHandle_t xEventGroup, const...
-**         xEventGroupSetBitsFromISR          - EventBits_t FRTOS1_xEventGroupSetBitsFromISR(EventGroupHandle_t xEventGroup,...
-**         xEventGroupClearBits               - EventBits_t FRTOS1_xEventGroupClearBits(EventGroupHandle_t xEventGroup, const...
-**         xEventGroupClearBitsFromISR        - EventBits_t FRTOS1_xEventGroupClearBitsFromISR(EventGroupHandle_t...
-**         xEventGroupGetBits                 - EventBits_t FRTOS1_xEventGroupGetBits(EventGroupHandle_t xEventGroup);
-**         xEventGroupGetBitsFromISR          - EventBits_t FRTOS1_xEventGroupGetBitsFromISR(EventGroupHandle_t xEventGroup);
-**         xEventGroupSync                    - EventBits_t FRTOS1_xEventGroupSync(EventGroupHandle_t xEventGroup, const...
-**         xTimerCreate                       - TimerHandle_t FRTOS1_xTimerCreate(const char * const pcTimerName, const...
-**         xTimerIsTimerActive                - BaseType_t FRTOS1_xTimerIsTimerActive(TimerHandle_t xTimer);
-**         xTimerStart                        - BaseType_t FRTOS1_xTimerStart(TimerHandle_t xTimer, TickType_t xBlockTime);
-**         xTimerStop                         - BaseType_t FRTOS1_xTimerStop(TimerHandle_t xTimer, TickType_t xBlockTime);
-**         xTimerChangePeriod                 - BaseType_t FRTOS1_xTimerChangePeriod(TimerHandle_t xTimer, TickType_t...
-**         xTimerDelete                       - BaseType_t FRTOS1_xTimerDelete(TickType_t xTimer, TickType_t xBlockTime);
-**         xTimerReset                        - BaseType_t FRTOS1_xTimerReset(TimerHandle_t xTimer, TickType_t xBlockTime);
-**         xTimerStartFromISR                 - BaseType_t FRTOS1_xTimerStartFromISR(TimerHandle_t xTimer, BaseType_t...
-**         xTimerStopFromISR                  - BaseType_t FRTOS1_xTimerStopFromISR(TimerHandle_t xTimer, BaseType_t...
-**         xTimerChangePeriodFromISR          - BaseType_t FRTOS1_xTimerChangePeriodFromISR(TimerHandle_t xTimer, TickType_t...
-**         xTimerResetFromISR                 - BaseType_t FRTOS1_xTimerResetFromISR(TimerHandle_t xTimer, BaseType_t...
-**         pvTimerGetTimerID                  - void* FRTOS1_pvTimerGetTimerID(TimerHandle_t xTimer);
-**         xTimerGetTimerDaemonTaskHandle     - TaskHandle_t FRTOS1_xTimerGetTimerDaemonTaskHandle(void);
-**         pcTimerGetTimerName                - char* FRTOS1_pcTimerGetTimerName(TimerHandle_t xTimer);
-**         xTimerPendFunctionCall             - BaseType_t FRTOS1_xTimerPendFunctionCall(PendedFunction_t xFunctionToPend,...
-**         xTimerPendFunctionCallFromISR      - BaseType_t FRTOS1_xTimerPendFunctionCallFromISR(PendedFunction_t...
-**         xTaskNotifyGive                    - BaseType_t FRTOS1_xTaskNotifyGive(TaskHandle_t xTaskToNotify);
-**         vTaskNotifyGiveFromISR             - void FRTOS1_vTaskNotifyGiveFromISR(TaskHandle_t xTaskToNotify, BaseType_t...
-**         ulTaskNotifyTake                   - uint32_t FRTOS1_ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t...
-**         xTaskNotify                        - BaseType_t FRTOS1_xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue,...
-**         xTaskNotifyFromISR                 - BaseType_t FRTOS1_xTaskNotifyFromISR(TaskHandle_t xTaskToNotify, uint32_t...
-**         xTaskNotifyAndQuery                - BaseType_t FRTOS1_xTaskNotifyAndQuery(TaskHandle_t xTaskToNotify, uint32_t...
-**         xTaskNotifyAndQueryFromISR         - BaseType_t FRTOS1_xTaskNotifyAndQueryFromISR(TaskHandle_t xTaskToNotify,...
-**         xTaskNotifyWait                    - BaseType_t FRTOS1_xTaskNotifyWait(uint32_t ulBitsToClearOnEntry, uint32_t...
-**         xTaskNotifyStateClear              - BaseType_t FRTOS1_xTaskNotifyStateClear(TaskHandle_t xTask);
-**         vTaskSetThreadLocalStoragePointer  - void FRTOS1_vTaskSetThreadLocalStoragePointer(TaskHandle_t xTaskToSet,...
-**         pvTaskGetThreadLocalStoragePointer - void* FRTOS1_pvTaskGetThreadLocalStoragePointer(TaskHandle_t xTaskToQuery,...
-**         ParseCommand                       - uint8_t FRTOS1_ParseCommand(const unsigned char *cmd, bool *handled, const...
-**         Init                               - void FRTOS1_Init(void);
+**         xTaskCreate                          - portBASE_TYPE FRTOS1_xTaskCreate(pdTASK_CODE pvTaskCode, const portCHAR *...
+**         xTaskCreateStatic                    - TaskHandle_t FRTOS1_xTaskCreateStatic(pdTASK_CODE pvTaskCode, const portCHAR...
+**         vTaskStartScheduler                  - void FRTOS1_vTaskStartScheduler(void);
+**         vTaskSuspend                         - void FRTOS1_vTaskSuspend(xTaskHandle pxTaskToSuspend);
+**         vTaskSuspendAll                      - void FRTOS1_vTaskSuspendAll(void);
+**         vTaskResume                          - void FRTOS1_vTaskResume(xTaskHandle pxTaskToResume);
+**         xTaskResumeAll                       - portBASE_TYPE FRTOS1_xTaskResumeAll(void);
+**         xTaskResumeFromISR                   - portBASE_TYPE FRTOS1_xTaskResumeFromISR(xTaskHandle pxTaskToResume);
+**         xTaskAbortDelay                      - BaseType_t FRTOS1_xTaskAbortDelay(TaskHandle_t xTask);
+**         taskYIELD                            - void FRTOS1_taskYIELD(void);
+**         taskENTER_CRITICAL                   - void FRTOS1_taskENTER_CRITICAL(void);
+**         taskEXIT_CRITICAL                    - void FRTOS1_taskEXIT_CRITICAL(void);
+**         taskDISABLE_INTERRUPTS               - void FRTOS1_taskDISABLE_INTERRUPTS(void);
+**         taskENABLE_INTERRUPTS                - void FRTOS1_taskENABLE_INTERRUPTS(void);
+**         vTaskDelay                           - void FRTOS1_vTaskDelay(portTickType xTicksToDelay);
+**         vTaskDelayUntil                      - void FRTOS1_vTaskDelayUntil(portTickType *pxPreviousWakeTime, portTickType...
+**         uxTaskPriorityGet                    - unsigned_portBASE_TYPE FRTOS1_uxTaskPriorityGet(xTaskHandle pxTask);
+**         xTaskGetTickCount                    - portTickType FRTOS1_xTaskGetTickCount(void);
+**         xTaskGetTickCountFromISR             - portTickType FRTOS1_xTaskGetTickCountFromISR(void);
+**         vTaskPrioritySet                     - void FRTOS1_vTaskPrioritySet(xTaskHandle pxTask, unsigned_portBASE_TYPE...
+**         vSemaphoreCreateBinary               - void FRTOS1_vSemaphoreCreateBinary(xSemaphoreHandle xSemaphore);
+**         xSemaphoreCreateBinary               - SemaphoreHandle_t FRTOS1_xSemaphoreCreateBinary(void);
+**         xSemaphoreCreateBinaryStatic         - SemaphoreHandle_t FRTOS1_xSemaphoreCreateBinaryStatic(StaticSemaphore_t...
+**         xSemaphoreCreateCounting             - xSemaphoreHandle FRTOS1_xSemaphoreCreateCounting(unsigned_portBASE_TYPE...
+**         xSemaphoreCreateCountingStatic       - xSemaphoreHandle FRTOS1_xSemaphoreCreateCountingStatic(unsigned_portBASE_TYPE...
+**         xSemaphoreGive                       - bool FRTOS1_xSemaphoreGive(xSemaphoreHandle xMutex);
+**         xSemaphoreTake                       - bool FRTOS1_xSemaphoreTake(xSemaphoreHandle xMutex, portTickType xBlockTime);
+**         uxSemaphoreGetCount                  - UBaseType_t FRTOS1_uxSemaphoreGetCount(SemaphoreHandle_t xSemaphore);
+**         xSemaphoreGiveFromISR                - bool FRTOS1_xSemaphoreGiveFromISR(xSemaphoreHandle xSemaphore,...
+**         xSemaphoreTakeFromISR                - bool FRTOS1_xSemaphoreTakeFromISR(xSemaphoreHandle xSemaphore,...
+**         xSemaphoreGetMutexHolder             - void* FRTOS1_xSemaphoreGetMutexHolder(xSemaphoreHandle xSemaphore);
+**         xSemaphoreCreateMutex                - xSemaphoreHandle FRTOS1_xSemaphoreCreateMutex(void);
+**         xSemaphoreCreateMutexStatic          - xSemaphoreHandle FRTOS1_xSemaphoreCreateMutexStatic(StaticSemaphore_t...
+**         xSemaphoreCreateRecursiveMutex       - xSemaphoreHandle FRTOS1_xSemaphoreCreateRecursiveMutex(void);
+**         xSemaphoreCreateRecursiveMutexStatic - xSemaphoreHandle FRTOS1_xSemaphoreCreat...
+**         xSemaphoreTakeRecursive              - bool FRTOS1_xSemaphoreTakeRecursive(xSemaphoreHandle xMutex, portTickType...
+**         xSemaphoreGiveRecursive              - bool FRTOS1_xSemaphoreGiveRecursive(xSemaphoreHandle xMutex);
+**         vSemaphoreDelete                     - void FRTOS1_vSemaphoreDelete(xSemaphoreHandle xSemaphore);
+**         pvPortMalloc                         - pVoid FRTOS1_pvPortMalloc(size_t xWantedSize);
+**         vPortFree                            - void FRTOS1_vPortFree(void *pv);
+**         xPortGetFreeHeapSize                 - Tsize_t FRTOS1_xPortGetFreeHeapSize(void);
+**         xTaskGetSchedulerState               - portBASE_TYPE FRTOS1_xTaskGetSchedulerState(void);
+**         vTaskList                            - void FRTOS1_vTaskList(signed portCHAR *pcWriteBuffer, size_t bufSize);
+**         uxTaskGetStackHighWaterMark          - unsigned_portBASE_TYPE FRTOS1_uxTaskGetStackHighWaterMark(xTaskHandle xTask);
+**         uxTaskGetNumberOfTasks               - unsigned_portBASE_TYPE FRTOS1_uxTaskGetNumberOfTasks(void);
+**         uxQueueMessagesWaiting               - unsigned_portBASE_TYPE FRTOS1_uxQueueMessagesWaiting(xQueueHandle xQueue);
+**         uxQueueMessagesWaitingfromISR        - unsigned_portBASE_TYPE FRTOS1_uxQueueMessagesWaitingfromISR(xQueueHandle...
+**         xQueueCreate                         - xQueueHandle FRTOS1_xQueueCreate(unsigned_portBASE_TYPE uxQueueLength,...
+**         xQueueCreateStatic                   - xQueueHandle FRTOS1_xQueueCreateStatic(unsigned_portBASE_TYPE uxQueueLength,...
+**         vQueueDelete                         - void FRTOS1_vQueueDelete(xQueueHandle pxQueueToDelete);
+**         xQueueReset                          - portBASE_TYPE FRTOS1_xQueueReset(xQueueHandle xQueue);
+**         xQueueSendToBack                     - portBASE_TYPE FRTOS1_xQueueSendToBack(xQueueHandle xQueue, const void...
+**         xQueueSendToFront                    - portBASE_TYPE FRTOS1_xQueueSendToFront(xQueueHandle xQueue, const void...
+**         xQueueReceive                        - portBASE_TYPE FRTOS1_xQueueReceive(xQueueHandle xQueue, void *pvBuffer,...
+**         xQueueOverwrite                      - portBASE_TYPE FRTOS1_xQueueOverwrite(xQueueHandle xQueue, const void...
+**         xQueueOverwriteFromISR               - portBASE_TYPE FRTOS1_xQueueOverwriteFromISR(xQueueHandle xQueue, const void...
+**         xQueuePeek                           - portBASE_TYPE FRTOS1_xQueuePeek(xQueueHandle xQueue, void *pvBuffer,...
+**         xQueuePeekFromISR                    - portBASE_TYPE FRTOS1_xQueuePeekFromISR(xQueueHandle xQueue, void *pvBuffer,...
+**         xQueueSendToBackFromISR              - portBASE_TYPE FRTOS1_xQueueSendToBackFromISR(xQueueHandle xQueue, const void...
+**         xQueueSendToFrontFromISR             - portBASE_TYPE FRTOS1_xQueueSendToFrontFromISR(xQueueHandle xQueue, const void...
+**         xQueueReceiveFromISR                 - portBASE_TYPE FRTOS1_xQueueReceiveFromISR(xQueueHandle xQueue, void...
+**         vQueueAddToRegistry                  - void FRTOS1_vQueueAddToRegistry(xQueueHandle xQueue, char *pcQueueName);
+**         vQueueUnregisterQueue                - void FRTOS1_vQueueUnregisterQueue(xQueueHandle xQueue);
+**         xQueueIsQueueFullFromISR             - portBASE_TYPE FRTOS1_xQueueIsQueueFullFromISR(xQueueHandle xQueue);
+**         xQueueIsQueueEmptyFromISR            - portBASE_TYPE FRTOS1_xQueueIsQueueEmptyFromISR(xQueueHandle xQueue);
+**         xEventGroupCreate                    - EventGroupHandle_t FRTOS1_xEventGroupCreate(void);
+**         xEventGroupCreateStatic              - EventGroupHandle_t FRTOS1_xEventGroupCreateStatic(StaticEventGroup_t...
+**         xEventGroupWaitBits                  - byte FRTOS1_xEventGroupWaitBits(const EventGroupHandle_t xEventGroup, const...
+**         xEventGroupSetBits                   - EventBits_t FRTOS1_xEventGroupSetBits(EventGroupHandle_t xEventGroup, const...
+**         xEventGroupSetBitsFromISR            - EventBits_t FRTOS1_xEventGroupSetBitsFromISR(EventGroupHandle_t xEventGroup,...
+**         xEventGroupClearBits                 - EventBits_t FRTOS1_xEventGroupClearBits(EventGroupHandle_t xEventGroup, const...
+**         xEventGroupClearBitsFromISR          - EventBits_t FRTOS1_xEventGroupClearBitsFromISR(EventGroupHandle_t...
+**         xEventGroupGetBits                   - EventBits_t FRTOS1_xEventGroupGetBits(EventGroupHandle_t xEventGroup);
+**         xEventGroupGetBitsFromISR            - EventBits_t FRTOS1_xEventGroupGetBitsFromISR(EventGroupHandle_t xEventGroup);
+**         xEventGroupSync                      - EventBits_t FRTOS1_xEventGroupSync(EventGroupHandle_t xEventGroup, const...
+**         xTimerCreate                         - TimerHandle_t FRTOS1_xTimerCreate(const char * const pcTimerName, const...
+**         xTimerIsTimerActive                  - BaseType_t FRTOS1_xTimerIsTimerActive(TimerHandle_t xTimer);
+**         xTimerStart                          - BaseType_t FRTOS1_xTimerStart(TimerHandle_t xTimer, TickType_t xBlockTime);
+**         xTimerStop                           - BaseType_t FRTOS1_xTimerStop(TimerHandle_t xTimer, TickType_t xBlockTime);
+**         xTimerChangePeriod                   - BaseType_t FRTOS1_xTimerChangePeriod(TimerHandle_t xTimer, TickType_t...
+**         xTimerDelete                         - BaseType_t FRTOS1_xTimerDelete(TickType_t xTimer, TickType_t xBlockTime);
+**         xTimerReset                          - BaseType_t FRTOS1_xTimerReset(TimerHandle_t xTimer, TickType_t xBlockTime);
+**         xTimerStartFromISR                   - BaseType_t FRTOS1_xTimerStartFromISR(TimerHandle_t xTimer, BaseType_t...
+**         xTimerStopFromISR                    - BaseType_t FRTOS1_xTimerStopFromISR(TimerHandle_t xTimer, BaseType_t...
+**         xTimerChangePeriodFromISR            - BaseType_t FRTOS1_xTimerChangePeriodFromISR(TimerHandle_t xTimer, TickType_t...
+**         xTimerResetFromISR                   - BaseType_t FRTOS1_xTimerResetFromISR(TimerHandle_t xTimer, BaseType_t...
+**         pvTimerGetTimerID                    - void* FRTOS1_pvTimerGetTimerID(TimerHandle_t xTimer);
+**         xTimerGetTimerDaemonTaskHandle       - TaskHandle_t FRTOS1_xTimerGetTimerDaemonTaskHandle(void);
+**         pcTimerGetTimerName                  - char* FRTOS1_pcTimerGetTimerName(TimerHandle_t xTimer);
+**         xTimerPendFunctionCall               - BaseType_t FRTOS1_xTimerPendFunctionCall(PendedFunction_t xFunctionToPend,...
+**         xTimerPendFunctionCallFromISR        - BaseType_t FRTOS1_xTimerPendFunctionCallFromISR(PendedFunction_t...
+**         xTaskNotifyGive                      - BaseType_t FRTOS1_xTaskNotifyGive(TaskHandle_t xTaskToNotify);
+**         vTaskNotifyGiveFromISR               - void FRTOS1_vTaskNotifyGiveFromISR(TaskHandle_t xTaskToNotify, BaseType_t...
+**         ulTaskNotifyTake                     - uint32_t FRTOS1_ulTaskNotifyTake(BaseType_t xClearCountOnExit, TickType_t...
+**         xTaskNotify                          - BaseType_t FRTOS1_xTaskNotify(TaskHandle_t xTaskToNotify, uint32_t ulValue,...
+**         xTaskNotifyFromISR                   - BaseType_t FRTOS1_xTaskNotifyFromISR(TaskHandle_t xTaskToNotify, uint32_t...
+**         xTaskNotifyAndQuery                  - BaseType_t FRTOS1_xTaskNotifyAndQuery(TaskHandle_t xTaskToNotify, uint32_t...
+**         xTaskNotifyAndQueryFromISR           - BaseType_t FRTOS1_xTaskNotifyAndQueryFromISR(TaskHandle_t xTaskToNotify,...
+**         xTaskNotifyWait                      - BaseType_t FRTOS1_xTaskNotifyWait(uint32_t ulBitsToClearOnEntry, uint32_t...
+**         xTaskNotifyStateClear                - BaseType_t FRTOS1_xTaskNotifyStateClear(TaskHandle_t xTask);
+**         vTaskSetThreadLocalStoragePointer    - void FRTOS1_vTaskSetThreadLocalStoragePointer(TaskHandle_t xTaskToSet,...
+**         pvTaskGetThreadLocalStoragePointer   - void* FRTOS1_pvTaskGetThreadLocalStoragePointer(TaskHandle_t xTaskToQuery,...
+**         xTaskGetHandle                       - TaskHandle_t FRTOS1_xTaskGetHandle(const char *pcNameToQuery );
+**         pcTaskGetName                        - char* FRTOS1_pcTaskGetName(TaskHandle_t xTaskToQuery);
+**         vTaskGetInfo                         - void FRTOS1_vTaskGetInfo(TaskHandle_t xTask, TaskStatus_t *pxTaskStatus,...
+**         ParseCommand                         - uint8_t FRTOS1_ParseCommand(const unsigned char *cmd, bool *handled, const...
+**         AppConfigureTimerForRuntimeStats     - void FRTOS1_AppConfigureTimerForRuntimeStats(void);
+**         AppGetRuntimeCounterValueFromISR     - uint32_t FRTOS1_AppGetRuntimeCounterValueFromISR(void);
+**         Init                                 - void FRTOS1_Init(void);
+**         Deinit                               - void FRTOS1_Deinit(void);
 **
 **     License : Open Source (LGPL)
-**     FreeRTOS (c) Copyright 2003-2015 Richard Barry, http: www.FreeRTOS.org
-**     FreeRTOS Processor Expert Component: (c) Copyright Erich Styger, 2013-2015
-**     Processor Expert and CodeWarrior (c) Copyright Freescale Semiconductor, 2013-2015, all rights reserved
+**     FreeRTOS (c) Copyright 2003-2016 Richard Barry, http: www.FreeRTOS.org
+**     FreeRTOS Processor Expert Component: (c) Copyright Erich Styger, 2013-2016
+**     Processor Expert and CodeWarrior (c) Copyright Freescale Semiconductor, 2013-2016, all rights reserved
 **     This is a free software and is opened for education, research and commercial developments under license policy of following terms:
 **     * This is a free software and there is NO WARRANTY.
 **     * No restriction on use. You can use, modify and redistribute it for personal, non-profit or commercial product UNDER YOUR RESPONSIBILITY.
@@ -202,203 +217,280 @@
 */         
 
 /* MODULE FRTOS1. */
-
-#include "Events.h"
 #include "FRTOS1.h"
+#if KSDK1_SDK_VERSION_USED == KSDK1_SDK_VERSION_NONE
+  #include "Events.h"
+#endif
 #include "portTicks.h"                 /* interface to tick counter */
 
 
-#if configFRTOS_MEMORY_SCHEME!=1 /* this scheme does not allow deallocation of memory */
 static uint8_t PrintTaskList(const CLS1_StdIOType *io) {
-  UBaseType_t nofTasks, nof, i;
-  TaskStatus_t *pxTaskStatusArray;
-  uint8_t buf[32], tmpBuf[16], res;
+  #define SHELL_MAX_NOF_TASKS 16 /* maximum number of tasks, as specified in the properties */
+  UBaseType_t nofTasks, i;
+  TaskHandle_t taskHandles[SHELL_MAX_NOF_TASKS];
+#if configUSE_TRACE_FACILITY
+  TaskStatus_t taskStatus;
+#endif
+  StackType_t *stackBeg, *stackEnd, *topOfStack;
+  uint8_t staticallyAllocated;
+  uint8_t buf[32], tmpBuf[32], res;
+  uint16_t stackSize;
+#if configGENERATE_RUN_TIME_STATS
+  uint32_t ulTotalTime, ulStatsAsPercentage;
+#endif
+#if configUSE_TRACE_FACILITY
+  #define PAD_STAT_TASK_TCB             (sizeof("TCB ")-1)
+#endif
+  #define PAD_STAT_TASK_STATIC          (sizeof("yes(2) ")-1)
+  #define PAD_STAT_TASK_HANDLE          (sizeof("0x20000398 ")-1)
+  #define PAD_STAT_TASK_NAME            (configMAX_TASK_NAME_LEN+1)
+#if configUSE_TRACE_FACILITY
+  #define PAD_STAT_TASK_STATE           (sizeof("Suspended")-1)
+#endif
+#if configUSE_TRACE_FACILITY
+  #define PAD_STAT_TASK_PRIO            (sizeof("(10,12) ")-1)
+#else
+  #define PAD_STAT_TASK_PRIO            (sizeof("Prio ")-1)
+#endif
+  #define PAD_STAT_TASK_STACK_BEG       (sizeof("0x20000398 ")-1)
+  #define PAD_STAT_TASK_STACK_END       (sizeof("0x20000398 ")-1)
+  #define PAD_STAT_TASK_STACK_SIZE      (sizeof("12000 B ")-1)
+  #define PAD_STAT_TASK_STACK_TOP       (sizeof("0x200006FC (  132 B) ")-1)
+#if configUSE_TRACE_FACILITY
+  #define PAD_STAT_TASK_STACK_MARK      (sizeof("12345 B ")-1)
+#endif
+#if configGENERATE_RUN_TIME_STATS
+  #define PAD_STAT_TASK_RUNTIME         (sizeof("0x20000398 (100%)")-1)
+#endif
 
   res = ERR_OK;
+#if !configUSE_TRACE_FACILITY
+  CLS1_SendStr((uint8_t*)"Info: Enable configUSE_TRACE_FACILITY for additional task information.\r\n", io->stdOut);
+#endif
+#if !configGENERATE_RUN_TIME_STATS
+  CLS1_SendStr((uint8_t*)"Info: Enable configGENERATE_RUN_TIME_STATS for runtime statistics.\r\n", io->stdOut);
+#endif
+  /* header */
+#if configUSE_TRACE_FACILITY
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"TCB", ' ', PAD_STAT_TASK_TCB);
+  CLS1_SendStr(buf, io->stdOut);
+#endif
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Static", ' ', PAD_STAT_TASK_STATIC);
+  CLS1_SendStr(buf, io->stdOut);
+
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Handle", ' ', PAD_STAT_TASK_HANDLE);
+  CLS1_SendStr(buf, io->stdOut);
+
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Name", ' ', PAD_STAT_TASK_NAME);
+  CLS1_SendStr(buf, io->stdOut);
+
+#if configUSE_TRACE_FACILITY
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"State", ' ', PAD_STAT_TASK_STATE);
+  CLS1_SendStr(buf, io->stdOut);
+#endif
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Prio", ' ', PAD_STAT_TASK_PRIO);
+  CLS1_SendStr(buf, io->stdOut);
+
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Stack Beg", ' ', PAD_STAT_TASK_STACK_BEG);
+  CLS1_SendStr(buf, io->stdOut);
+
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Stack End", ' ', PAD_STAT_TASK_STACK_END);
+  CLS1_SendStr(buf, io->stdOut);
+
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Size", ' ', PAD_STAT_TASK_STACK_SIZE);
+  CLS1_SendStr(buf, io->stdOut);
+
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Stack Top", ' ', PAD_STAT_TASK_STACK_TOP);
+  CLS1_SendStr(buf, io->stdOut);
+#if configUSE_TRACE_FACILITY
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Unused", ' ', PAD_STAT_TASK_STACK_MARK);
+  CLS1_SendStr(buf, io->stdOut);
+#endif
+#if configGENERATE_RUN_TIME_STATS
+  buf[0] = '\0';
+  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Runtime", ' ', PAD_STAT_TASK_RUNTIME);
+  CLS1_SendStr(buf, io->stdOut);
+#endif
+  CLS1_SendStr((unsigned char*)"\r\n", io->stdOut);
+
+#if configGENERATE_RUN_TIME_STATS
+  ulTotalTime = portGET_RUN_TIME_COUNTER_VALUE(); /* get total time passed in system */
+  ulTotalTime /= 100UL; /* For percentage calculations. */
+#endif
+
   nofTasks = uxTaskGetNumberOfTasks();
-  pxTaskStatusArray = pvPortMalloc(nofTasks*sizeof(TaskStatus_t));
-  if (pxTaskStatusArray!=NULL) {
-    nof = uxTaskGetSystemState(pxTaskStatusArray, nofTasks, NULL);
-    if (nof!=nofTasks) { /* error, array was to small? */
-      CLS1_SendStr((unsigned char*)"***GetSystemState failed!\r\n", io->stdErr);
-      res = ERR_FAILED; /* out of memory */
-    } else {
-      #define PAD_STAT_TASK_TCB         5
-      #define PAD_STAT_TASK_HANDLE      11
-      #define PAD_STAT_TASK_NAME        (configMAX_TASK_NAME_LEN+1)
-      #define PAD_STAT_TASK_STATE       10
-      #define PAD_STAT_TASK_PRIO        8
-      #define PAD_STAT_TASK_RUNTIME     11
-      #define PAD_STAT_TASK_STACK_MARK  11
-      /* header */
+  if (nofTasks>SHELL_MAX_NOF_TASKS) {
+    UTIL1_strcpy(buf, sizeof(buf), (const unsigned char*)"WARNING: more tasks than Shell maximum number of tasks.\r\n");
+    CLS1_SendStr(buf, io->stdErr);
+    nofTasks = SHELL_MAX_NOF_TASKS;
+  }
+  /* get task handles of all tasks. */
+  nofTasks = xGetTaskHandles(&taskHandles[0], SHELL_MAX_NOF_TASKS);
+  for(i=0;i<nofTasks;i++) {
+    if (taskHandles[i]!=NULL) {
+    #if configUSE_TRACE_FACILITY
+      vTaskGetInfo(taskHandles[i], &taskStatus, pdTRUE, eInvalid);
+    #endif
+      vTaskGetStackInfo(taskHandles[i], &stackBeg, &stackEnd, &topOfStack, &staticallyAllocated);
+
+#if configUSE_TRACE_FACILITY
+      /* TCB */
+      tmpBuf[0] = '\0';
+      UTIL1_strcatNum32u(tmpBuf, sizeof(tmpBuf), (uint32_t)taskStatus.xTaskNumber);
       buf[0] = '\0';
-      UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"TCB#", ' ', PAD_STAT_TASK_TCB);
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_TCB);
       CLS1_SendStr(buf, io->stdOut);
-
-      buf[0] = '\0';
-      UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Handle", ' ', PAD_STAT_TASK_HANDLE);
-      CLS1_SendStr(buf, io->stdOut);
-
-      buf[0] = '\0';
-      UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Name", ' ', PAD_STAT_TASK_NAME);
-      CLS1_SendStr(buf, io->stdOut);
-
-      buf[0] = '\0';
-      UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"State", ' ', PAD_STAT_TASK_STATE);
-      CLS1_SendStr(buf, io->stdOut);
-
-      buf[0] = '\0';
-      UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Prio", ' ', PAD_STAT_TASK_PRIO);
-      CLS1_SendStr(buf, io->stdOut);
-
-      buf[0] = '\0';
-      UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Runtime", ' ', PAD_STAT_TASK_RUNTIME);
-      CLS1_SendStr(buf, io->stdOut);
-
-      buf[0] = '\0';
-      UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Stack", ' ', PAD_STAT_TASK_STACK_MARK);
-      CLS1_SendStr(buf, io->stdOut);
-
-      CLS1_SendStr((unsigned char*)"\r\n", io->stdOut);
-      for(i=0; i<nof; i++) {
-        /* TCB */
-        tmpBuf[0] = '\0';
-        UTIL1_strcatNum32u(tmpBuf, sizeof(tmpBuf), (uint32_t)pxTaskStatusArray[i].xTaskNumber);
-        buf[0] = '\0';
-        UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_TCB);
-        CLS1_SendStr(buf, io->stdOut);
-        /* task handle */
-        tmpBuf[0] = '\0';
-        UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)"0x");
-        UTIL1_strcatNum32Hex(tmpBuf, sizeof(tmpBuf), (uint32_t)pxTaskStatusArray[i].xHandle);
-        buf[0] = '\0';
-        UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_HANDLE);
-        CLS1_SendStr(buf, io->stdOut);
-
-        /* task name */
-        buf[0] = '\0';
-        UTIL1_strcatPad(buf, sizeof(buf), (unsigned char*)pxTaskStatusArray[i].pcTaskName, ' ', PAD_STAT_TASK_NAME);
-        CLS1_SendStr(buf, io->stdOut);
-
-        /* state */
-        switch(pxTaskStatusArray[i].eCurrentState) {
-          case eRunning:   UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Running"); break;
-          case eReady:     UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Ready"); break;
-          case eSuspended: UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Suspended"); break;
-          case eBlocked:   UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Blocked"); break;
-          default:         UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"UNKNOWN!"); break;
-        }
-        buf[0] = '\0';
-        UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STATE);
-        CLS1_SendStr(buf, io->stdOut);
-
-        /* (baseprio,currprio) */
-        tmpBuf[0] = '\0';
-        UTIL1_chcat(tmpBuf, sizeof(tmpBuf), '(');
-        UTIL1_strcatNum32s(tmpBuf, sizeof(tmpBuf), pxTaskStatusArray[i].uxBasePriority);
-        UTIL1_chcat(tmpBuf, sizeof(tmpBuf), ',');
-        UTIL1_strcatNum32s(tmpBuf, sizeof(tmpBuf), pxTaskStatusArray[i].uxCurrentPriority);
-        UTIL1_chcat(tmpBuf, sizeof(tmpBuf), ')');
-        buf[0] = '\0';
-        UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_PRIO);
-        CLS1_SendStr(buf, io->stdOut);
-
-        /* runtime */
-        tmpBuf[0] = '\0';
-        UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)"0x");
-        UTIL1_strcatNum32Hex(tmpBuf, sizeof(tmpBuf), pxTaskStatusArray[i].ulRunTimeCounter);
-        buf[0] = '\0';
-        UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_RUNTIME);
-        CLS1_SendStr(buf, io->stdOut);
-
-        /* stack high water mark */
-        tmpBuf[0] = '\0';
-        UTIL1_strcatNum16u(tmpBuf, sizeof(tmpBuf), pxTaskStatusArray[i].usStackHighWaterMark);
-        buf[0] = '\0';
-        UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STACK_MARK);
-        CLS1_SendStr(buf, io->stdOut);
-
-        CLS1_SendStr((unsigned char*)"\r\n", io->stdOut);
+#endif
+      /* Static */
+      tmpBuf[0] = '\0';
+      if (staticallyAllocated==0) {
+        UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"no (0)");
+      } else {
+        UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"yes(");
+        UTIL1_strcatNum8u(tmpBuf, sizeof(tmpBuf), staticallyAllocated);
+        UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)")");
       }
-    }
-  } else {
-    CLS1_SendStr((unsigned char*)"***alloc failed!\r\n", io->stdErr);
-    res = ERR_FAILED; /* out of memory */
-  }
-  if (pxTaskStatusArray!=NULL) { /* free memory */
-    vPortFree(pxTaskStatusArray);
-  }
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STATIC);
+      CLS1_SendStr(buf, io->stdOut);
+
+      /* task handle */
+      UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"0x");
+      UTIL1_strcatNum32Hex(tmpBuf, sizeof(tmpBuf), (uint32_t)taskHandles[i]);
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_HANDLE);
+      CLS1_SendStr(buf, io->stdOut);
+
+      /* task name */
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), (unsigned char*)pcTaskGetName(taskHandles[i]), ' ', PAD_STAT_TASK_NAME);
+      CLS1_SendStr(buf, io->stdOut);
+
+#if configUSE_TRACE_FACILITY
+      /* state */
+      switch(taskStatus.eCurrentState) {
+        case eRunning:   UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Running"); break;
+        case eReady:     UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Ready"); break;
+        case eSuspended: UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Suspended"); break;
+        case eBlocked:   UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"Blocked"); break;
+        default:         UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"UNKNOWN!"); break;
+      }
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STATE);
+      CLS1_SendStr(buf, io->stdOut);
+#endif
+#if configUSE_TRACE_FACILITY
+      /* (baseprio,currprio) */
+      tmpBuf[0] = '\0';
+      UTIL1_chcat(tmpBuf, sizeof(tmpBuf), '(');
+      UTIL1_strcatNum32u(tmpBuf, sizeof(tmpBuf), taskStatus.uxBasePriority);
+      UTIL1_chcat(tmpBuf, sizeof(tmpBuf), ',');
+      UTIL1_strcatNum32u(tmpBuf, sizeof(tmpBuf), taskStatus.uxCurrentPriority);
+      UTIL1_chcat(tmpBuf, sizeof(tmpBuf), ')');
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_PRIO);
+      CLS1_SendStr(buf, io->stdOut);
+#else
+      /* prio */
+      tmpBuf[0] = '\0';
+      UTIL1_strcatNum32s(tmpBuf, sizeof(tmpBuf), uxTaskPriorityGet(taskHandles[i]));
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_PRIO);
+      CLS1_SendStr(buf, io->stdOut);
+#endif
+      /* stack begin */
+      UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"0x");
+      UTIL1_strcatNum32Hex(tmpBuf, sizeof(tmpBuf), (uint32_t)stackBeg);
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STACK_BEG);
+      CLS1_SendStr(buf, io->stdOut);
+
+      /* stack end */
+      UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"0x");
+      UTIL1_strcatNum32Hex(tmpBuf, sizeof(tmpBuf), (uint32_t)stackEnd);
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STACK_END);
+      CLS1_SendStr(buf, io->stdOut);
+
+      /* stack size */
+#if (portSTACK_GROWTH>0)
+      stackSize = (uint16_t)(((uint32_t)stackEnd - (uint32_t)stackBeg)+sizeof(StackType_t));
+#else
+      stackSize = (uint16_t)(((uint32_t)stackBeg - (uint32_t)stackEnd)+sizeof(StackType_t));
+#endif
+      tmpBuf[0] = '\0';
+      UTIL1_strcatNum16uFormatted(tmpBuf, sizeof(tmpBuf), stackSize, ' ', 5);
+      UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)" B");
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STACK_SIZE);
+      CLS1_SendStr(buf, io->stdOut);
+
+      /* stack top */
+      UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"0x");
+      UTIL1_strcatNum32Hex(tmpBuf, sizeof(tmpBuf), (uint32_t)topOfStack);
+      UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)" (");
+#if (portSTACK_GROWTH>0)
+      UTIL1_strcatNum16uFormatted(tmpBuf, sizeof(tmpBuf), (uint16_t)(((uint32_t)topOfStack - (uint32_t)stackBeg))+sizeof(StackType_t), ' ', 5);
+#else
+      UTIL1_strcatNum16uFormatted(tmpBuf, sizeof(tmpBuf), (uint16_t)(((uint32_t)stackBeg - (uint32_t)topOfStack))+sizeof(StackType_t), ' ', 5);
+#endif
+      UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)" B)");
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STACK_TOP);
+      CLS1_SendStr(buf, io->stdOut);
+
+#if configUSE_TRACE_FACILITY
+      /* stack high water mark (the lower the number, the less stack available */
+      tmpBuf[0] = '\0';
+      UTIL1_strcatNum16uFormatted(tmpBuf, sizeof(tmpBuf), taskStatus.usStackHighWaterMark*sizeof(portSTACK_TYPE), ' ', 5);
+      UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)" B");
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_STACK_MARK);
+      CLS1_SendStr(buf, io->stdOut);
+#endif
+#if configGENERATE_RUN_TIME_STATS
+      /* runtime */
+      UTIL1_strcpy(tmpBuf, sizeof(tmpBuf), (unsigned char*)"0x");
+      UTIL1_strcatNum32Hex(tmpBuf, sizeof(tmpBuf), taskStatus.ulRunTimeCounter);
+      if (ulTotalTime>0) { /* to avoid division by zero */
+        /* What percentage of the total run time has the task used?
+           This will always be rounded down to the nearest integer.
+           ulTotalRunTime has already been divided by 100. */
+        ulStatsAsPercentage = taskStatus.ulRunTimeCounter/ulTotalTime;
+        if (ulStatsAsPercentage>0) {
+          UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)" (");
+          UTIL1_strcatNum16uFormatted(tmpBuf, sizeof(tmpBuf), ulStatsAsPercentage, ' ', 3);
+          UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)"%)");
+        } else {
+          /* If the percentage is zero here then the task has consumed less than 1% of the total run time. */
+          UTIL1_strcat(tmpBuf, sizeof(tmpBuf), (unsigned char*)" ( <1%)");
+        }
+      }
+      buf[0] = '\0';
+      UTIL1_strcatPad(buf, sizeof(buf), tmpBuf, ' ', PAD_STAT_TASK_RUNTIME);
+      CLS1_SendStr(buf, io->stdOut);
+#endif
+      CLS1_SendStr((unsigned char*)"\r\n", io->stdOut);
+    } /* for */
+  } /* if */
   return res;
 }
-#endif /* configFRTOS_MEMORY_SCHEME!=1 */
 
 static uint8_t PrintStatus(const CLS1_StdIOType *io) {
-#if configUSE_TRACE_FACILITY || configGENERATE_RUN_TIME_STATS /* FreeRTOS trace feature enabled */
-#if configFRTOS_MEMORY_SCHEME==1 /* this scheme does not allow deallocation of memory */
-  static unsigned char *taskListBufferP=NULL; /* allocated only once, never deallocated! */
-#else
-  unsigned char *taskListBufferP;
-#endif
-  size_t bufSize;
-#endif
   uint8_t buf[16];
 
   CLS1_SendStatusStr((unsigned char*)"FRTOS1", (unsigned char*)"\r\n", io->stdOut);
-#if 0 && configUSE_TRACE_FACILITY /* FreeRTOS trace feature enabled */
-  CLS1_SendStr((unsigned char*)"TASK LIST:\r\n", io->stdOut);
-  buf[0] = '\0';
-  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Name", ' ', configMAX_TASK_NAME_LEN);
-  CLS1_SendStr(buf, io->stdOut);
-  CLS1_SendStr((unsigned char*)"\tState\tPrio\tStack\tTCB#\r\n", io->stdOut);
-  CLS1_SendStr((unsigned char*)CLS1_DASH_LINE, io->stdOut);
-  CLS1_SendStr((unsigned char*)"\r\n", io->stdOut);
-  /* task list and status */
-  bufSize = 40*uxTaskGetNumberOfTasks();  /* about 40 bytes for a task should be enough */
-#if configFRTOS_MEMORY_SCHEME==1 /* this scheme does not allow deallocation of memory */
-  if (taskListBufferP==NULL) { /* only if not allocated yet */
-    taskListBufferP = FRTOS1_pvPortMalloc(bufSize); /* about 40 bytes for a task should be enough */
-  }
-#else
-  taskListBufferP = FRTOS1_pvPortMalloc(bufSize); /* about 40 bytes for a task should be enough */
-#endif
-  if (taskListBufferP != NULL) {
-    FRTOS1_vTaskList((char*)taskListBufferP, bufSize);
-    CLS1_SendStr(taskListBufferP, io->stdOut);
-#if configFRTOS_MEMORY_SCHEME!=1 /* this scheme does not allow deallocation of memory */
-    FRTOS1_vPortFree(taskListBufferP);
-#endif
-  } else {
-    CLS1_SendStr((unsigned char*)"\r\n*** out of heap! ***\r\n", io->stdErr);
-  }
-#endif
-#if ((configGENERATE_RUN_TIME_STATS==1) && (configUSE_STATS_FORMATTING_FUNCTIONS==1))
-  CLS1_SendStr((unsigned char*)CLS1_DASH_LINE, io->stdOut);
-  CLS1_SendStr((unsigned char*)"\r\nRTOS RUN-TIME STATISTICS:\r\n", io->stdOut);
-  buf[0] = '\0';
-  UTIL1_strcatPad(buf, sizeof(buf), (const unsigned char*)"Name", ' ', configMAX_TASK_NAME_LEN);
-  CLS1_SendStr(buf, io->stdOut);
-  CLS1_SendStr((unsigned char*)"\tTime\t\t%Time\r\n", io->stdOut);
-  CLS1_SendStr((unsigned char*)CLS1_DASH_LINE, io->stdOut);
-  CLS1_SendStr((unsigned char*)"\r\n", io->stdOut);
-  /* task list and status */
-  bufSize = 40*uxTaskGetNumberOfTasks();  /* about 40 bytes for a task should be enough */
-#if configFRTOS_MEMORY_SCHEME==1 /* this scheme does not allow deallocation of memory */
-  if (taskListBufferP==NULL) { /* only if not allocated yet */
-    taskListBufferP = FRTOS1_pvPortMalloc(bufSize);
-  }
-#else
-  taskListBufferP = FRTOS1_pvPortMalloc(bufSize);
-#endif
-  if (taskListBufferP != NULL) {
-    FRTOS1_vTaskGetRunTimeStats((char*)taskListBufferP, bufSize);
-    CLS1_SendStr(taskListBufferP, io->stdOut);
-#if configFRTOS_MEMORY_SCHEME!=1 /* this scheme does not allow deallocation of memory */
-    FRTOS1_vPortFree(taskListBufferP);
-#endif
-  } else {
-    CLS1_SendStr((unsigned char*)"\r\n*** out of heap! ***\r\n", io->stdErr);
-  }
-#endif
   CLS1_SendStatusStr((unsigned char*)"  RTOS ticks", (const unsigned char*)"", io->stdOut);
   UTIL1_Num16sToStr(buf, sizeof(buf), configTICK_RATE_HZ);
   CLS1_SendStr(buf, io->stdOut);
@@ -406,7 +498,7 @@ static uint8_t PrintStatus(const CLS1_StdIOType *io) {
   UTIL1_Num16sToStr(buf, sizeof(buf), 1000/configTICK_RATE_HZ);
   CLS1_SendStr(buf, io->stdOut);
   CLS1_SendStr((unsigned char*)" ms\r\n", io->stdOut);
-#if configFRTOS_MEMORY_SCHEME!=3 /* wrapper to malloc() does not have xPortGetFreeHeapSize() */
+#if configSUPPORT_DYNAMIC_ALLOCATION && configFRTOS_MEMORY_SCHEME!=3 /* wrapper to malloc() does not have xPortGetFreeHeapSize() */
   CLS1_SendStatusStr((unsigned char*)"  Free heap", (const unsigned char*)"", io->stdOut);
   UTIL1_Num32uToStr(buf, sizeof(buf), FRTOS1_xPortGetFreeHeapSize());
   CLS1_SendStr(buf, io->stdOut);
@@ -418,9 +510,7 @@ static uint8_t PrintStatus(const CLS1_StdIOType *io) {
 static uint8_t PrintHelp(const CLS1_StdIOType *io) {
   CLS1_SendHelpStr((unsigned char*)"FRTOS1", (unsigned char*)"Group of FRTOS1 commands\r\n", io->stdOut);
   CLS1_SendHelpStr((unsigned char*)"  help|status", (unsigned char*)"Print help or status information\r\n", io->stdOut);
-#if configFRTOS_MEMORY_SCHEME!=1 /* this scheme does not allow deallocation of memory */
   CLS1_SendHelpStr((unsigned char*)"  tasklist", (unsigned char*)"Print tasklist\r\n", io->stdOut);
-#endif
   return ERR_OK;
 }
 
@@ -466,35 +556,6 @@ static uint8_t PrintHelp(const CLS1_StdIOType *io) {
 */
 /*
 portBASE_TYPE FRTOS1_xTaskCreate(pdTASK_CODE pvTaskCode, const portCHAR * const pcName, unsigned portSHORT usStackDepth, void *pvParameters, unsigned portBASE_TYPE uxPriority, xTaskHandle *pvCreatedTask)
-{
-  *** Implemented as macro in the header file FRTOS1.h
-}
-*/
-
-/*
-** ===================================================================
-**     Method      :  FRTOS1_vTaskDelete (component FreeRTOS)
-**     Description :
-**         Remove a task from the RTOS real time kernels management.
-**         The task being deleted will be removed from all ready,
-**         blocked, suspended and event lists.
-**         NOTE: The idle task is responsible for freeing the kernel
-**         allocated memory from tasks that have been deleted. It is
-**         therefore important that the idle task is not starved of
-**         microcontroller processing time if your application makes
-**         any calls to vTaskDelete (). Memory allocated by the task
-**         code is not automatically freed, and should be freed before
-**         the task is deleted.
-**     Parameters  :
-**         NAME            - DESCRIPTION
-**         pxTask          - The handle of the task to be deleted.
-**                           Passing NULL will cause the calling task to
-**                           be deleted.
-**     Returns     : Nothing
-** ===================================================================
-*/
-/*
-void FRTOS1_vTaskDelete(xTaskHandle pxTask)
 {
   *** Implemented as macro in the header file FRTOS1.h
 }
@@ -1990,11 +2051,9 @@ uint8_t FRTOS1_ParseCommand(const unsigned char *cmd, bool *handled, const CLS1_
   } else if ((UTIL1_strcmp((char*)cmd, CLS1_CMD_STATUS)==0) || (UTIL1_strcmp((char*)cmd, "FRTOS1 status")==0)) {
     *handled = TRUE;
     return PrintStatus(io);
-#if configFRTOS_MEMORY_SCHEME!=1 /* this scheme does not allow deallocation of memory */
   } else if (UTIL1_strcmp((char*)cmd, "FRTOS1 tasklist")==0) {
     *handled = TRUE;
     return PrintTaskList(io);
-#endif
   }
   return ERR_OK;
 }
@@ -2014,67 +2073,6 @@ void FRTOS1_Init(void)
   vPortInitTickTimer();
   vPortStopTickTimer();
 }
-
-/*
-** ===================================================================
-**     Method      :  FRTOS1_xTaskGetCurrentTaskHandle (component FreeRTOS)
-**     Description :
-**         The handle of the currently running (calling) task.
-**     Parameters  : None
-**     Returns     :
-**         ---             - The handle of the currently running
-**                           (calling) task.
-** ===================================================================
-*/
-/*
-xTaskHandle FRTOS1_xTaskGetCurrentTaskHandle(void)
-{
-  *** Implemented as macro in the header file FRTOS1.h
-}
-*/
-
-/*
-** ===================================================================
-**     Method      :  FRTOS1_xTaskGetIdleTaskHandle (component FreeRTOS)
-**     Description :
-**         The task handle associated with the Idle task. The Idle task
-**         is created automatically when the RTOS scheduler is started.
-**     Parameters  : None
-**     Returns     :
-**         ---             - The task handle associated with the Idle
-**                           task. The Idle task is created
-**                           automatically when the RTOS scheduler is
-**                           started.
-** ===================================================================
-*/
-/*
-xTaskHandle FRTOS1_xTaskGetIdleTaskHandle(void)
-{
-  *** Implemented as macro in the header file FRTOS1.h
-}
-*/
-
-/*
-** ===================================================================
-**     Method      :  FRTOS1_pcTaskGetTaskName (component FreeRTOS)
-**     Description :
-**         Returns the name of the task.
-**     Parameters  :
-**         NAME            - DESCRIPTION
-**         xTaskToQuery    - The handle of the task
-**                           being queried. xTaskToQuery can be set to
-**                           NULL to query the name of the calling task.
-**     Returns     :
-**         ---             - A pointer to the subject tasks name, which
-**                           is a standard NULL terminated C string
-** ===================================================================
-*/
-/*
-signed char FRTOS1_pcTaskGetTaskName(xTaskHandle xTaskToQuery)
-{
-  *** Implemented as macro in the header file FRTOS1.h
-}
-*/
 
 /*
 ** ===================================================================
@@ -4288,6 +4286,532 @@ BaseType_t FRTOS1_xTaskNotifyStateClear(TaskHandle_t xTask)
   *** Implemented as macro in the header file FRTOS1.h
 }
 */
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_Deinit (component FreeRTOS)
+**     Description :
+**         Module deinitialization method
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void FRTOS1_Deinit(void)
+{
+  /* nothing needed */
+}
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xTaskGetHandle (component FreeRTOS)
+**     Description :
+**         Looks up the handle of a task from the task's name. 
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * pcNameToQuery   - The text name (as a
+**                           standard C NULL terminated string) of the
+**                           task for which the handle will be returned.
+**     Returns     :
+**         ---             - If a task that has the name passed in
+**                           pcNameToQuery can be located then the
+**                           handle of the task is returned, otherwise
+**                           NULL is returned. 
+** ===================================================================
+*/
+/*
+TaskHandle_t FRTOS1_xTaskGetHandle(const char *pcNameToQuery )
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_pcTaskGetName (component FreeRTOS)
+**     Description :
+**         Looks up the name of a task from the task's handle. 
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         xTaskToQuery    - The handle of the task
+**                           being queried. xTaskToQuery can be set to
+**                           NULL to query the name of the calling task.
+**     Returns     :
+**         ---             - A pointer to the subject task's name,
+**                           which is a standard NULL terminated C
+**                           string.
+** ===================================================================
+*/
+/*
+char* FRTOS1_pcTaskGetName(TaskHandle_t xTaskToQuery)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xTaskCreateStatic (component FreeRTOS)
+**     Description :
+**         Create a new task and add it to the list of tasks that are
+**         ready to run.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         pvTaskCode      - Pointer to the task entry
+**                           function. Tasks must be implemented to
+**                           never return (i.e. continuous loop).
+**         pcName          - A descriptive name for the task.
+**                           This is mainly used to facilitate debugging.
+**                           Max length defined by
+**                           configMAX_TASK_NAME_LEN.
+**         usStackDepth    - The size of the task
+**                           stack specified as the number of variables
+**                           the stack can hold - not the number of
+**                           bytes. For example, if the stack is 16 bits
+**                           wide and usStackDepth is defined as 100,
+**                           200 bytes will be allocated for stack
+**                           storage. The stack depth multiplied by the
+**                           stack width must not exceed the maximum
+**                           value that can be contained in a variable
+**                           of type size_t.
+**         pvParameters    - Pointer that will be
+**                           used as the parameter for the task being
+**                           created.
+**         uxPriority      - The priority at which the
+**                           task should run.
+**         puxStackBuffer  - Must point to a
+**                           StackType_t array that has at least
+**                           ulStackDepth indexes (see the ulStackDepth
+**                           parameter above) - the array will be used
+**                           as the task's stack, so must be persistent
+**                           (not declared on the stack of a function)
+**         pxTaskBuffer    - Must point to a variable
+**                           of type StaticTask_t. The variable will be
+**                           used to hold the new task's data structures
+**                           (TCB), so it must be persistent (not
+**                           declared on the stack of a function). 
+**     Returns     :
+**         ---             - Task handle if the task was successfully
+**                           created and added to a ready list,
+**                           otherwise Null.
+** ===================================================================
+*/
+/*
+TaskHandle_t FRTOS1_xTaskCreateStatic(pdTASK_CODE pvTaskCode, const portCHAR * const pcName, unsigned portSHORT usStackDepth, void *pvParameters, unsigned portBASE_TYPE uxPriority, StackType_t * const puxStackBuffer, StaticTask_t * const pxTaskBuffer)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xQueueCreateStatic (component FreeRTOS)
+**     Description :
+**         Creates a queue.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         uxQueueLength   - The maximum number of
+**                           items the queue can hold at any time.
+**         uxItemSize      - The size in bytes of each
+**                           item the queue will hold.
+**         pucQueueStorageBuffer - If
+**                           uxItemSize is not zero then
+**                           pucQueueStorageBuffer must point to a
+**                           uint8_t array that is at least large enough
+**                           to hold the maximum number of items that
+**                           can be in the queue at any one time - which
+**                           is ( uxQueueLength * uxItemSize ) bytes. If
+**                           uxItemSize is zero then
+**                           pucQueueStorageBuffer can be NULL. 
+**         pxQueueBuffer   - Must point to a
+**                           variable of type StaticQueue_t, which will
+**                           be used to hold the queue's data structure.
+**     Returns     :
+**         ---             - A handle to the created queue is returned
+**                           provided the queue was created successfully.
+**                           NULL is returned if the queue cannot be
+**                           created because there is too little heap
+**                           RAM available.
+** ===================================================================
+*/
+/*
+xQueueHandle FRTOS1_xQueueCreateStatic(unsigned_portBASE_TYPE uxQueueLength, unsigned_portBASE_TYPE uxItemSize, uint8_t *pucQueueStorageBuffer, StaticQueue_t *pxQueueBuffer)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xEventGroupCreateStatic (component FreeRTOS)
+**     Description :
+**          Create a new RTOS event group. This function cannot be
+**         called from an interrupt.
+**         Event groups are stored in variables of type
+**         EventGroupHandle_t. The number of bits (or flags)
+**         implemented within an event group is 8 if
+**         configUSE_16_BIT_TICKS is set to 1, or 24 if
+**         configUSE_16_BIT_TICKS is set to 0. The dependency on
+**         configUSE_16_BIT_TICKS results from the data type used for
+**         thread local storage in the internal implementation of RTOS
+**         tasks. 
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         pxEventGroupBuffer - Must point
+**                           to a variable of type StaticEventGroup_t,
+**                           in which the event group data structure
+**                           will be stored.
+**     Returns     :
+**         ---             - Event Group Handle. If the event group was
+**                           created then a handle to the event group is
+**                           returned. If there was insufficient
+**                           FreeRTOS heap available to create the event
+**                           group then NULL is returned. 
+** ===================================================================
+*/
+/*
+EventGroupHandle_t FRTOS1_xEventGroupCreateStatic(StaticEventGroup_t *pxEventGroupBuffer)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xSemaphoreCreateBinaryStatic (component FreeRTOS)
+**     Description :
+**         The old vSemaphoreCreateBinary() macro is now deprecated in
+**         favour of this xSemaphoreCreateBinary() function.  Note that
+**         binary semaphores created using the vSemaphoreCreateBinary()
+**         macro are created in a state such that the first call to
+**         'take' the semaphore would pass, whereas binary semaphores
+**         created using xSemaphoreCreateBinary() are created in a
+**         state such that the the semaphore must first be 'given'
+**         before it can be 'taken'.
+**         Function that creates a semaphore by using the existing
+**         queue mechanism. The queue length is 1 as this is a binary
+**         semaphore.  The data size is 0 as nothing is actually stored
+**         - all that is important is whether the queue is empty or
+**         full (the binary semaphore is available or not).
+**         This type of semaphore can be used for pure synchronisation
+**         between tasks or between an interrupt and a task.  The
+**         semaphore need not be given back once obtained, so one
+**         task/interrupt can continuously 'give' the semaphore while
+**         another continuously 'takes' the semaphore.  For this reason
+**         this type of semaphore does not use a priority inheritance
+**         mechanism.  For an alternative that does use priority
+**         inheritance see xSemaphoreCreateMutex().
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         pxSemaphoreBuffer - Must point to
+**                           a variable of type StaticSemaphore_t, which
+**                           will be used to hold the semaphore's state.
+**     Returns     :
+**         ---             - Handle to the created semaphore.
+** ===================================================================
+*/
+/*
+SemaphoreHandle_t FRTOS1_xSemaphoreCreateBinaryStatic(StaticSemaphore_t *pxSemaphoreBuffer)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xSemaphoreCreateCountingStatic (component FreeRTOS)
+**     Description :
+**         Macro that creates a counting semaphore by using the
+**         existing queue mechanism.
+**         Counting semaphores are typically used for two things:
+**         1. Counting events.
+**         In this usage scenario an event handler will 'give' a
+**         semaphore each time an event occurs (incrementing the
+**         semaphore count value), and a handler task will 'take' a
+**         semaphore each time it processes an event (decrementing the
+**         semaphore count value). The count value is therefore the
+**         difference between the number of events that have occurred
+**         and the number that have been processed. In this case it is
+**         desirable for the initial count value to be zero.
+**         2. Resource management.
+**         In this usage scenario the count value indicates the number
+**         of resources available. To obtain control of a resource a
+**         task must first obtain a semaphore - decrementing the
+**         semaphore count value. When the count value reaches zero
+**         there are no free resources. When a task finishes with the
+**         resource it 'gives' the semaphore back - incrementing the
+**         semaphore count value. In this case it is desirable for the
+**         initial count value to be equal to the maximum count value,
+**         indicating that all resources are free.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         uxMaxCount      - The maximum count value that
+**                           can be reached. When the semaphore reaches
+**                           this value it can no longer be 'given'.
+**         uxInitialCount  - The count value
+**                           assigned to the semaphore when it is
+**                           created.
+**         pxSempahoreBuffer - Must point to
+**                           a variable of type StaticSemaphore_t, which
+**                           is then used to hold the semaphore's data
+**                           structures.
+**     Returns     :
+**         ---             - xSemaphoreHandle handle
+** ===================================================================
+*/
+/*
+xSemaphoreHandle FRTOS1_xSemaphoreCreateCountingStatic(unsigned_portBASE_TYPE uxMaxCount, unsigned_portBASE_TYPE uxInitialCount, StaticSemaphore_t pxSempahoreBuffer)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xSemaphoreCreateMutexStatic (component FreeRTOS)
+**     Description :
+**         Macro that creates a mutex semaphore by using the existing
+**         queue mechanism.
+**         Mutexes created using this macro can be accessed using the
+**         xSemaphoreTake() and xSemaphoreGive() macros. The
+**         xSemaphoreTakeRecursive() and xSemaphoreGiveRecursive()
+**         macros should not be used.
+**         Mutexes and binary semaphores are very similar but have some
+**         subtle differences: Mutexes include a priority inheritance
+**         mechanism, binary semaphores do not. This makes binary
+**         semaphores the better choice for implementing
+**         synchronisation (between tasks or between tasks and an
+**         interrupt), and mutexes the better choice for implementing
+**         simple mutual exclusion.
+**         The priority of a task that 'takes' a mutex can potentially
+**         be raised if another task of higher priority attempts to
+**         obtain the same mutex. The task that owns the mutex
+**         'inherits' the priority of the task attempting to 'take' the
+**         same mutex. This means the mutex must always be 'given' back
+**         - otherwise the higher priority task will never be able to
+**         obtain the mutex, and the lower priority task will never
+**         'disinherit' the priority. An example of a mutex being used
+**         to implement mutual exclusion is provided on the
+**         xSemaphoreTake() documentation page.
+**         A binary semaphore need not be given back once obtained, so
+**         task synchronisation can be implemented by one
+**         task/interrupt continuously 'giving' the semaphore while
+**         another continuously 'takes' the semaphore. This is
+**         demonstrated by the sample code on the
+**         xSemaphoreGiveFromISR() documentation page.
+**         Both mutex and binary semaphores are assigned to variables
+**         of type xSemaphoreHandle and can be used in any API function
+**         that takes a parameter of this type. 
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         Variable_1      - Must point to a variable of
+**                           type StaticSemaphore_t, which will be used
+**                           to hold the mutex type semaphore's state. 
+**     Returns     :
+**         ---             - Handle to the created mutex semaphore.
+**                           Should be of type  xSemaphoreHandle.
+** ===================================================================
+*/
+/*
+xSemaphoreHandle FRTOS1_xSemaphoreCreateMutexStatic(StaticSemaphore_t *pxMutexBuffer)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xTaskAbortDelay (component FreeRTOS)
+**     Description :
+**         Forces a task to leave the Blocked state, and enter the
+**         Ready state, even if the event the task was in the Blocked
+**         state to wait for has not occurred, and any specified
+**         timeout has not expired. 
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         xTask           - The handle of the task that will be
+**                           forced out of the Blocked state. 
+**     Returns     :
+**         ---             - If the task referenced by xTask was not in
+**                           the Blocked state then pdFAIL is returned.
+**                           Otherwise pdPASS is returned. 
+** ===================================================================
+*/
+/*
+BaseType_t FRTOS1_xTaskAbortDelay(TaskHandle_t xTask)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_vTaskGetInfo (component FreeRTOS)
+**     Description :
+**         Whereas uxTaskGetSystemState() populates a TaskStatus_t
+**         structure for each task in the system, vTaskGetInfo()
+**         populates a TaskStatus_t structures for just a single task.
+**         The TaskStatus_t structure contains, among other things,
+**         members for the task handle, task name, task priority, task
+**         state, and total amount of run time consumed by the task. 
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         xTask           - The handle of the task being queried.
+**                           Setting xTask to NULL will return
+**                           information on the calling task. 
+**         pxTaskStatus    - The TaskStatus_t
+**                           structure pointed to by pxTaskStatus will
+**                           be filled with information about the task
+**                           referenced by the handle passed in the
+**                           xTask parameter. 
+**         xGetFreeStackSpace - The
+**                           TaskStatus_t structure contains a member to
+**                           report the stack high water mark of the
+**                           task being queried. The stack high water
+**                           mark is the minimum amount of stack space
+**                           that has ever existed, so the closer the
+**                           number is to zero the closer the task has
+**                           come to overflowing its stack.Calculating
+**                           the stack high water mark takes a
+**                           relatively long time, and can make the
+**                           system temporarily unresponsive - so the
+**                           xGetFreeStackSpace parameter is provided to
+**                           allow the high water mark checking to be
+**                           skipped. The high watermark value will only
+**                           be written to the TaskStatus_t structure if
+**                           xGetFreeStackSpace is not set to pdFALSE. 
+**         eState          - The TaskStatus_t structure contains
+**                           a member to report the state of the task
+**                           being queried. Obtaining the task state is
+**                           not as fast as a simple assignment - so the
+**                           eState parameter is provided to allow the
+**                           state information to be omitted from the
+**                           TaskStatus_t structure. To obtain state
+**                           information then set eState to eInvalid -
+**                           otherwise the value passed in eState will
+**                           be reported as the task state in the
+**                           TaskStatus_t structure. 
+**     Returns     : Nothing
+** ===================================================================
+*/
+/*
+void FRTOS1_vTaskGetInfo(TaskHandle_t xTask, TaskStatus_t *pxTaskStatus, BaseType_t xGetFreeStackSpace, eTaskState eState)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_uxSemaphoreGetCount (component FreeRTOS)
+**     Description :
+**         
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         xSemaphore      - The handle of the semaphore
+**                           being queried. 
+**     Returns     :
+**         ---             - If the semaphore is a counting semaphore
+**                           then the semaphores current count value is
+**                           returned. If the semaphore is a binary
+**                           semaphore then 1 is returned if the
+**                           semaphore is available, and 0 is returned
+**                           if the semaphore is not available. 
+** ===================================================================
+*/
+/*
+UBaseType_t FRTOS1_uxSemaphoreGetCount(SemaphoreHandle_t xSemaphore)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_xSemaphoreCreateRecursiveMutexStatic (component FreeRTOS)
+**     Description :
+**         Macro that implements a recursive mutex by using the
+**         existing queue mechanism.
+**         Mutexes created using this macro can be accessed using the
+**         xSemaphoreTakeRecursive() and xSemaphoreGiveRecursive()
+**         macros.  The  xSemaphoreTake() and xSemaphoreGive() macros
+**         should not be used.
+**         A mutex used recursively can be 'taken' repeatedly by the
+**         owner. The mutex doesn't become available again until the
+**         owner has called xSemaphoreGiveRecursive() for each
+**         successful 'take' request.  For example, if a task
+**         successfully 'takes' the same mutex 5 times then the mutex
+**         will not be available to any other task until it has also
+**         'given' the mutex back exactly five times.
+**         This type of semaphore uses a priority inheritance mechanism
+**         so a task 'taking' a semaphore MUST ALWAYS 'give' the
+**         semaphore back once the semaphore it is no longer required.
+**         Mutex type semaphores cannot be used from within interrupt
+**         service routines.
+**         See vSemaphoreCreateBinary() for an alternative
+**         implementation that can be used for pure synchronisation
+**         (where one task or interrupt always 'gives' the semaphore
+**         and another always 'takes' the semaphore) and from within
+**         interrupt service routines.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         Variable_1      - Must point to a variable of
+**                           type StaticSemaphore_t, which will be used
+**                           to hold the mutex type semaphore's state. 
+**     Returns     :
+**         ---             - Handle to the created mutex semaphore.
+**                           Should be of type  xSemaphoreHandle.
+** ===================================================================
+*/
+/*
+xSemaphoreHandle FRTOS1_xSemaphoreCreateRecursiveMutexStatic(StaticSemaphore_t *pxMutexBuffer)
+{
+  *** Implemented as macro in the header file FRTOS1.h
+}
+*/
+
+/*
+** ===================================================================
+**     Method      :  FRTOS1_AppConfigureTimerForRuntimeStats (component FreeRTOS)
+**     Description :
+**         Configures the timer for generating runtime statistics
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+#if configGENERATE_RUN_TIME_STATS
+void FRTOS1_AppConfigureTimerForRuntimeStats(void)
+{
+#if configGENERATE_RUN_TIME_STATS_USE_TICKS
+  /* nothing needed, the RTOS will initialize the tick counter */
+#else
+  FRTOS1_RunTimeCounter = 0;
+#endif
+}
+
+#endif /* configGENERATE_RUN_TIME_STATS */
+/*
+** ===================================================================
+**     Method      :  FRTOS1_AppGetRuntimeCounterValueFromISR (component FreeRTOS)
+**     Description :
+**         returns the current runtime counter. Function can be called
+**         from an interrupt service routine.
+**     Parameters  : None
+**     Returns     :
+**         ---             - runtime counter value
+** ===================================================================
+*/
+uint32_t FRTOS1_AppGetRuntimeCounterValueFromISR(void)
+{
+#if configGENERATE_RUN_TIME_STATS
+  #if configGENERATE_RUN_TIME_STATS_USE_TICKS
+  return xTaskGetTickCountFromISR(); /* using RTOS tick counter */
+  #else /* using timer counter */
+  return FRTOS1_RunTimeCounter;
+  #endif
+#else
+  return 0; /* dummy value */
+#endif
+}
 
 /* END FRTOS1. */
 

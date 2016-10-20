@@ -3,84 +3,49 @@
 **     Filename    : TmDt1.c
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
-**     Component   : TimeDate
-**     Version     : Component 02.111, Driver 01.00, CPU db: 3.00.000
-**     Repository  : Kinetis
+**     Component   : GenericTimeDate
+**     Version     : Component 01.028, Driver 01.00, CPU db: 3.00.000
+**     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:05, # CodeGen: 55
+**     Date/Time   : 2016-10-18, 16:22, # CodeGen: 51
 **     Abstract    :
-**         This component "TimeDate" implements real time and date.
-**         The component requires a periodic interrupt generator: timer
-**         compare or reload register or timer-overflow interrupt
-**         (of free running counter). User can select precision of
-**         selected timer.
-**         The component supports also alarm with event OnAlarm.
+**         Software date/time module.
 **     Settings    :
 **          Component name                                 : TmDt1
-**          Periodic interrupt source                      : LPTMR0_CMR
-**          Counter                                        : LPTMR0_CNR
-**          Interrupt service/event                        : Enabled
-**            Interrupt                                    : INT_LPTMR0
-**            Interrupt priority                           : medium priority
-**          Resolution                                     : 10 ms
-**          Component uses entire timer                    : no
-**          Initialization                                 : 
-**            Enabled in init. code                        : yes
-**            Time                                         : 00:00:00
-**            Date                                         : 2008-01-01
-**          CPU clock/speed selection                      : 
-**            High speed mode                              : This component enabled
-**            Low speed mode                               : This component disabled
-**            Slow speed mode                              : This component disabled
-**          Referenced components                          : 
-**            TimeDate_LDD                                 : TimeDate_LDD
+**          Critical Section                               : CS1
+**          SDK                                            : KSDK1
+**          Tick Time (ms)                                 : 10
+**          RTOS                                           : Enabled
+**            RTOS                                         : FRTOS1
+**          Shell                                          : Enabled
+**            Utility                                      : UTIL1
+**            Shell                                        : CLS1
+**          Initialization                                 : Enabled
+**            Init in startup                              : yes
+**            Date                                         : 2013-01-01
+**            Time                                         : 17:51:31
 **     Contents    :
-**         SetTime - byte TmDt1_SetTime(byte Hour, byte Min, byte Sec, byte Sec100);
-**         GetTime - byte TmDt1_GetTime(TIMEREC *Time);
-**         SetDate - byte TmDt1_SetDate(word Year, byte Month, byte Day);
-**         GetDate - byte TmDt1_GetDate(DATEREC *Date);
+**         AddTick      - void TmDt1_AddTick(void);
+**         AddTicks     - void TmDt1_AddTicks(uint16_t nofTicks);
+**         TicksToTime  - uint8_t TmDt1_TicksToTime(uint32_t ticks, TIMEREC *Time);
+**         TimeToTicks  - uint8_t TmDt1_TimeToTicks(TIMEREC *Time, uint32_t *ticks);
+**         SetTime      - uint8_t TmDt1_SetTime(uint8_t Hour, uint8_t Min, uint8_t Sec, uint8_t Sec100);
+**         GetTime      - uint8_t TmDt1_GetTime(TIMEREC *Time);
+**         SetDate      - uint8_t TmDt1_SetDate(uint16_t Year, uint8_t Month, uint8_t Day);
+**         GetDate      - uint8_t TmDt1_GetDate(DATEREC *Date);
+**         ParseCommand - uint8_t TmDt1_ParseCommand(const unsigned char *cmd, bool *handled, const...
+**         Init         - void TmDt1_Init(void);
+**         DeInit       - void TmDt1_DeInit(void);
 **
-**     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
-**     All Rights Reserved.
-**     
-**     Redistribution and use in source and binary forms, with or without modification,
-**     are permitted provided that the following conditions are met:
-**     
-**     o Redistributions of source code must retain the above copyright notice, this list
-**       of conditions and the following disclaimer.
-**     
-**     o Redistributions in binary form must reproduce the above copyright notice, this
-**       list of conditions and the following disclaimer in the documentation and/or
-**       other materials provided with the distribution.
-**     
-**     o Neither the name of Freescale Semiconductor, Inc. nor the names of its
-**       contributors may be used to endorse or promote products derived from this
-**       software without specific prior written permission.
-**     
-**     THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-**     ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-**     WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-**     DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-**     ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-**     (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-**     LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-**     ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-**     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-**     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**     
+**     (c) Copyright Freescale Semiconductor, 2014
 **     http: www.freescale.com
-**     mail: support@freescale.com
+**     Source code is based on the original TimeDate Processor Expert component.
 ** ###################################################################*/
 /*!
 ** @file TmDt1.c
 ** @version 01.00
 ** @brief
-**         This component "TimeDate" implements real time and date.
-**         The component requires a periodic interrupt generator: timer
-**         compare or reload register or timer-overflow interrupt
-**         (of free running counter). User can select precision of
-**         selected timer.
-**         The component supports also alarm with event OnAlarm.
+**         Software date/time module.
 */         
 /*!
 **  @addtogroup TmDt1_module TmDt1 module documentation
@@ -91,9 +56,152 @@
 
 #include "TmDt1.h"
 
+#define TmDt1_TICK_TIME_MS \
+  (1000/100)                            /* Period in milliseconds as defined in RTOS component properties, at which TmDt1_AddTick() is called */
+#if TmDt1_TICK_TIME_MS==0
+  #error "Tick period cannot be zero!"
+#endif
+#define TmDt1_TICKS_PER_S  (1000/TmDt1_TICK_TIME_MS) /* number of timer ticks per second */
+
+static uint8_t CntDay;                 /* Day counter */
+static uint8_t CntMonth;               /* Month counter */
+static uint16_t CntYear;               /* Year Counter */
+static uint32_t tickCntr;              /* Software tick counter (1 tick = TmDt1_TICK_TIME_MS ms) */
+
+/* Table of month length (in days) */
+static const uint8_t ULY[12] = {31U,28U,31U,30U,31U,30U,31U,31U,30U,31U,30U,31U}; /* Un-leap-year */
+static const uint8_t  LY[12] = {31U,29U,31U,30U,31U,30U,31U,31U,30U,31U,30U,31U}; /* Leap-year */
+
+static uint8_t AddDate(uint8_t *buf, uint16_t bufSize) {
+  DATEREC tdate;
+
+  if (TmDt1_GetDate(&tdate)!=ERR_OK) {
+    return ERR_FAILED;
+  }
+  UTIL1_strcatNum16uFormatted(buf, bufSize, tdate.Day, '0', 2);
+  UTIL1_chcat(buf, bufSize, '.');
+  UTIL1_strcatNum16uFormatted(buf, bufSize, tdate.Month, '0', 2);
+  UTIL1_chcat(buf, bufSize, '.');
+  UTIL1_strcatNum16u(buf, bufSize, (uint16_t)tdate.Year);
+  return ERR_OK;
+}
+
+static uint8_t AddTime(uint8_t *buf, uint16_t bufSize) {
+  TIMEREC ttime;
+
+  if (TmDt1_GetTime(&ttime)!=ERR_OK) {
+    return ERR_FAILED;
+  }
+  UTIL1_strcatNum16sFormatted(buf, bufSize, ttime.Hour, '0', 2);
+  UTIL1_chcat(buf, bufSize, ':');
+  UTIL1_strcatNum16sFormatted(buf, bufSize, ttime.Min, '0', 2);
+  UTIL1_chcat(buf, bufSize, ':');
+  UTIL1_strcatNum16sFormatted(buf, bufSize, ttime.Sec, '0', 2);
+  UTIL1_chcat(buf, bufSize, ',');
+  UTIL1_strcatNum16sFormatted(buf, bufSize, ttime.Sec100, '0', 2);
+  return ERR_OK;
+}
+
+static uint8_t DateCmd(const unsigned char *cmd, CLS1_ConstStdIOType *io) {
+  /* precondition: cmd points to "TmDt1 date" */
+  uint8_t day, month;
+  uint16_t year;
+  const unsigned char *p;
+  uint8_t res = ERR_OK;
+
+  p = cmd + sizeof("TmDt1 date")-1;
+  if (*p==' ') { /* ok, have an argument */
+    if (UTIL1_ScanDate(&p, &day, &month, &year) == ERR_OK) { /* ok, format fine */
+      /* update real time clock */
+      res = TmDt1_SetDate(year, month, day);
+      if (res != ERR_OK) {
+        CLS1_SendStr((unsigned char*)"*** Failure setting time\r\n", io->stdErr);
+        res = ERR_FAILED;
+      }
+    } else {
+      CLS1_SendStr((unsigned char*)"*** error while reading command! ***", io->stdErr);
+      CLS1_SendStr((void *)cmd, io->stdErr);
+      CLS1_SendStr((unsigned char*)"\r\n", io->stdErr);
+      res = ERR_FAILED;
+    }
+  } /* has an argument */
+  /* print now current date */
+  if (res==ERR_OK) {
+    unsigned char buf[sizeof("Wednesday dd:mm:yyyy\\r\\n")];
+
+    buf[0]='\0';
+    if (AddDate(buf, sizeof(buf))!=ERR_OK) {
+      CLS1_SendStr((unsigned char*)"***Failed to get date\r\n", io->stdErr);
+      res = ERR_FAILED;
+    } else {
+      UTIL1_strcat(buf, sizeof(buf), (unsigned char*)"\r\n");
+      CLS1_SendStr(buf, io->stdOut);
+    }
+  }
+  return res;
+}
+
+static uint8_t TimeCmd(const unsigned char *cmd, CLS1_ConstStdIOType *io) {
+  uint8_t hour, minute, second, hSecond;
+  const unsigned char *p;
+  uint8_t res = ERR_OK;
+
+  p = cmd + sizeof("TmDt1 time")-1;
+  if (*p==' ') { /* has an argument */
+    if (UTIL1_ScanTime(&p, &hour, &minute, &second, &hSecond)==ERR_OK) { /* format fine */
+      /* set RTC time */
+      res = TmDt1_SetTime(hour, minute, second, hSecond);
+      if (res != ERR_OK) {
+        CLS1_SendStr((unsigned char*)"*** Failure setting time\r\n", io->stdErr);
+        res = ERR_FAILED;
+      }
+    } else {
+      CLS1_SendStr((unsigned char*)"*** Error while reading command: ", io->stdErr);
+      CLS1_SendStr(cmd, io->stdErr);
+      CLS1_SendStr((unsigned char*)"\r\n", io->stdErr);
+      res = ERR_FAILED;
+    }
+  }
+  /* print now current time */
+  if (res==ERR_OK) {
+    unsigned char buf[sizeof("hh:mm:ss.hh\\r\\n")];
+
+    buf[0] = '\0';
+    if (AddTime(buf, sizeof(buf))!=ERR_OK) {
+      CLS1_SendStr((unsigned char*)"***Failed to get time\r\n", io->stdErr);
+      res = ERR_FAILED;
+    } else {
+      UTIL1_strcat(buf, sizeof(buf), (unsigned char*)"\r\n");
+      CLS1_SendStr(buf, io->stdOut);
+    }
+  }
+  return res;
+}
+
+static uint8_t PrintStatus(CLS1_ConstStdIOType *io) {
+  uint8_t buf[24];
+
+  CLS1_SendStatusStr((unsigned char*)"TmDt1", (const unsigned char*)"", io->stdOut);
+  buf[0] = '\0';
+  if (AddDate(buf, sizeof(buf))!=ERR_OK) {
+    CLS1_SendStr((unsigned char*)"***Failed to get date!\r\n", io->stdErr);
+    return ERR_FAILED;
+  }
+  CLS1_SendStr(buf, io->stdOut);
+  UTIL1_strcpy(buf, sizeof(buf), (unsigned char*)", ");
+  if (AddTime(buf, sizeof(buf))!=ERR_OK) {
+    CLS1_SendStr((unsigned char*)"***Failed to get time!\r\n", io->stdErr);
+    return ERR_FAILED;
+  } else {
+    CLS1_SendStr(buf, io->stdOut);
+  }
+  CLS1_SendStr((unsigned char*)"\r\n", io->stdOut);
+  return ERR_OK;
+}
+
 /*
 ** ===================================================================
-**     Method      :  TmDt1_SetTime (component TimeDate)
+**     Method      :  TmDt1_SetTime (component GenericTimeDate)
 **     Description :
 **         This method sets a new actual time.
 **     Parameters  :
@@ -101,119 +209,303 @@
 **         Hour            - Hours (0 - 23)
 **         Min             - Minutes (0 - 59)
 **         Sec             - Seconds (0 - 59)
-**         Sec100          - Hundredths of seconds (0 - 99)
+**         Sec100          - Hundredth of seconds (0 - 99)
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
-**                           ERR_RANGE - Parameter out of range
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_SetTime(byte Hour,byte Min,byte Sec,byte Sec100)
+#ifdef __HIWARE__
+  #pragma MESSAGE DISABLE C5905 /* multiplication with one (happens if TmDt1_TICKS_PER_S is 100) */
+#endif
+uint8_t TmDt1_SetTime(uint8_t Hour, uint8_t Min, uint8_t Sec, uint8_t Sec100)
 {
-  LDD_TimeDate_TTimeRec InhrTime;
+  uint32_t nofTicks;
+  TIMEREC time;
+  CS1_CriticalVariable()
 
-  InhrTime.Hour = (uint16_t)Hour;
-  InhrTime.Min = (uint16_t)Min;
-  InhrTime.Sec = (uint16_t)Sec;
-  InhrTime.Sec100 = (uint16_t)Sec100;
-  return TimeDateLdd1_SetTime(TimeDateLdd1_DeviceData, &InhrTime);
+  if ((Sec100>99U) || (Sec>59U) || (Min>59U) || (Hour>23U)) { /* Test correctnes of given time */
+    return ERR_RANGE;                  /* If not correct then error */
+  }
+  time.Hour = Hour;
+  time.Min = Min;
+  time.Sec = Sec;
+  time.Sec100 = Sec100;
+  (void)TmDt1_TimeToTicks(&time, &nofTicks);
+  CS1_EnterCritical();
+  tickCntr = nofTicks;
+  CS1_ExitCritical();
+  return ERR_OK;                       /* OK */
+}
+#ifdef __HIWARE__
+  #pragma MESSAGE DEFAULT C5905 /* multiplication with one  */
+#endif
+
+/*
+** ===================================================================
+**     Method      :  TmDt1_AddTick (component GenericTimeDate)
+**     Description :
+**         Needs to be called periodically by the application to
+**         increase the time tick count.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TmDt1_AddTick(void)
+{
+  const uint8_t *ptr;                  /* Pointer to ULY/LY table */
+  CS1_CriticalVariable()
+
+  CS1_EnterCritical();                 /* need exclusive access to tick counter */
+  tickCntr++;                          /* Software timer counter increment by timer period */
+  CS1_ExitCritical();                  /* end of critical section */
+  if (tickCntr >= 24*3600UL*TmDt1_TICKS_PER_S) { /* Does the counter reach 24 hours? */
+    tickCntr -= 24*3600UL*TmDt1_TICKS_PER_S; /* If yes then reset it by subtracting exactly 24 hours */
+    CS1_EnterCritical();
+    CntDay++;                          /* Increment day counter */
+    CS1_ExitCritical();
+    if (CntYear & 0x03U) {             /* Is this year un-leap-one? */
+      ptr = ULY;                       /* Set pointer to un-leap-year day table */
+    } else {                           /* Is this year leap-one? */
+      ptr = LY;                        /* Set pointer to leap-year day table */
+    }
+    ptr--;                             /* Decrement the pointer */
+    if (CntDay > ptr[CntMonth]) {      /* Day counter overflow? */
+      CntDay = 1U;                     /* Set day counter on 1 */
+      CS1_EnterCritical();
+      CntMonth++;                      /* Increment month counter */
+      CS1_ExitCritical();
+      if (CntMonth > 12U) {            /* Month counter overflow? */
+        CntMonth = 1U;                 /* Set month counter on 1 */
+        CS1_EnterCritical();
+        CntYear++;                     /* Increment year counter */
+        CS1_ExitCritical();
+      }
+    }
+  }
 }
 
 /*
 ** ===================================================================
-**     Method      :  TmDt1_GetTime (component TimeDate)
+**     Method      :  TmDt1_AddTicks (component GenericTimeDate)
+**     Description :
+**         Same as AddTick(), but multiple ticks can be added in one
+**         step.
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         nofTicks        - Number of ticks to be added
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TmDt1_AddTicks(uint16_t nofTicks)
+{
+  while(nofTicks>0) {
+    TmDt1_AddTick();
+    nofTicks--;
+  }
+}
+
+/*
+** ===================================================================
+**     Method      :  TmDt1_GetTime (component GenericTimeDate)
 **     Description :
 **         This method returns current time.
 **     Parameters  :
 **         NAME            - DESCRIPTION
 **       * Time            - Pointer to the structure TIMEREC. It
 **                           contains actual number of hours, minutes,
-**                           seconds and hundredths of seconds.
+**                           seconds and hundredth of seconds.
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_GetTime(TIMEREC *Time)
+uint8_t TmDt1_GetTime(TIMEREC *Time)
 {
-  LDD_TimeDate_TTimeRec InhrTime;
-  LDD_TError Error;
+  uint32_t ticks;                      /* temporary variable of software tick counter */
+  uint8_t res;
+  CS1_CriticalVariable()
 
-  Error = TimeDateLdd1_GetTime(TimeDateLdd1_DeviceData, &InhrTime);
-  if (Error != ERR_OK) {
-    return (byte)Error;
-  }
-  Time->Hour = (byte)InhrTime.Hour;
-  Time->Min = (byte)InhrTime.Min;
-  Time->Sec = (byte)InhrTime.Sec;
-  Time->Sec100 = (byte)InhrTime.Sec100;
-  return ERR_OK;
+  CS1_EnterCritical();                 /* need exclusive access to tick counter */
+  ticks = tickCntr;                    /* actual number of ticks */
+  CS1_ExitCritical();                  /* end of critical section */
+
+  res = TmDt1_TicksToTime(ticks, Time);
+  return res;
 }
 
 /*
 ** ===================================================================
-**     Method      :  TmDt1_SetDate (component TimeDate)
+**     Method      :  TmDt1_SetDate (component GenericTimeDate)
 **     Description :
-**         This method sets a new actual date. See limitations at the
-**         page <General Info>.
+**         This method sets a new actual date.
 **     Parameters  :
 **         NAME            - DESCRIPTION
 **         Year            - Years (16-bit unsigned integer)
 **         Month           - Months (8-bit unsigned integer)
 **         Day             - Days (8-bit unsigned integer)
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
-**                           ERR_RANGE - Parameter out of range
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_SetDate(word Year,byte Month,byte Day)
+uint8_t TmDt1_SetDate(uint16_t Year, uint8_t Month, uint8_t Day)
 {
-  LDD_TimeDate_TDateRec InhrDate;
+  const uint8_t* ptr;                  /* Pointer to ULY/LY table */
+  CS1_CriticalVariable()
 
-  InhrDate.Year = (uint16_t)Year;
-  InhrDate.Month = (uint16_t)Month;
-  InhrDate.Day = (uint16_t)Day;
-  InhrDate.DayOfWeek = (uint16_t)UINT_MAX; /* Correct day of week will be calculated */
-  return TimeDateLdd1_SetDate(TimeDateLdd1_DeviceData, &InhrDate);
+  if ((Year < 1998U) || (Year > 2099U) || (Month > 12U) || (Month == 0U) || (Day > 31U) || (Day == 0U)) { /* Test correctness of given parameters */
+    return ERR_RANGE;                  /* If not correct then error */
+  }
+  ptr = (((Year & 0x03U) != 0U) ? ULY : LY); /* Set pointer to leap-year or un-leap-year day table */
+  if (ptr[Month - 1U] < Day) {         /* Does the obtained number of days exceed number of days in the appropriate month & year? */
+    return ERR_RANGE;                  /* If yes (incorrect date inserted) then error */
+  }
+  CS1_EnterCritical();                 /* Save the PS register */
+  CntDay = Day;                        /* Set day counter to the given value */
+  CntMonth = Month;                    /* Set month counter to the given value */
+  CntYear = Year;                      /* Set year counter to the given value */
+  CS1_ExitCritical();                  /* Restore the PS register */
+  return ERR_OK;                       /* OK */
 }
 
 /*
 ** ===================================================================
-**     Method      :  TmDt1_GetDate (component TimeDate)
+**     Method      :  TmDt1_GetDate (component GenericTimeDate)
 **     Description :
 **         This method returns current date.
 **     Parameters  :
 **         NAME            - DESCRIPTION
-**       * Date            - Pointer to the structure DATEREC. It
-**                           contains actual year, month, and day
-**                           description.
+**       * Date            - Pointer to DATEREC
 **     Returns     :
-**         ---             - Error code, possible codes:
-**                           ERR_OK - OK
-**                           ERR_SPEED - This device does not work in
-**                           the active speed mode
+**         ---             - Error code
 ** ===================================================================
 */
-byte TmDt1_GetDate(DATEREC *Date)
+uint8_t TmDt1_GetDate(DATEREC *Date)
 {
-  LDD_TimeDate_TDateRec InhrDate;
-  LDD_TError Error;
+  CS1_CriticalVariable()
 
-  Error = TimeDateLdd1_GetDate(TimeDateLdd1_DeviceData, &InhrDate);
-  if (Error != ERR_OK) {
-    return (byte)Error;
-  }
-  Date->Year = (word)InhrDate.Year;
-  Date->Month = (byte)InhrDate.Month;
-  Date->Day = (byte)InhrDate.Day;
+  CS1_EnterCritical();                 /* Save the PS register */
+  Date->Year = CntYear;                /* Year */
+  Date->Month = CntMonth;              /* Month */
+  Date->Day = CntDay;                  /* Day */
+  CS1_ExitCritical();                  /* Restore the PS register */
   return ERR_OK;                       /* OK */
+}
+
+/*
+** ===================================================================
+**     Method      :  TmDt1_Init (component GenericTimeDate)
+**     Description :
+**         Initialization method
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TmDt1_Init(void)
+{
+  /* initialize date/time as set in properties */
+  (void)TmDt1_SetTime(17, 51, 31, 0);
+  (void)TmDt1_SetDate(2013, 1, 1);
+}
+
+/*
+** ===================================================================
+**     Method      :  TmDt1_ParseCommand (component GenericTimeDate)
+**     Description :
+**         Shell Command Line parser
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * cmd             - Pointer to command line
+**       * handled         - Pointer to variable which tells if
+**                           the command has been handled or not
+**       * io              - Pointer to I/O structure
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+uint8_t TmDt1_ParseCommand(const unsigned char *cmd, bool *handled, const CLS1_StdIOType *io)
+{
+  if (UTIL1_strcmp((char*)cmd, CLS1_CMD_HELP)==0 || UTIL1_strcmp((char*)cmd, "TmDt1 help")==0) {
+    CLS1_SendHelpStr((unsigned char*)"TmDt1", (const unsigned char*)"Group of TmDt1 commands\r\n", io->stdOut);
+    CLS1_SendHelpStr((unsigned char*)"  help|status", (const unsigned char*)"Print help or status information\r\n", io->stdOut);
+    CLS1_SendHelpStr((unsigned char*)"  time [hh:mm:ss[,z]]", (const unsigned char*)"Set the current time. Prints the current time if no argument\r\n", io->stdOut);
+    CLS1_SendHelpStr((unsigned char*)"  date [dd.mm.yyyy]", (const unsigned char*)"Set the current date. Prints the current date if no argument\r\n", io->stdOut);
+    *handled = TRUE;
+    return ERR_OK;
+  } else if ((UTIL1_strcmp((char*)cmd, CLS1_CMD_STATUS)==0) || (UTIL1_strcmp((char*)cmd, "TmDt1 status")==0)) {
+    *handled = TRUE;
+    return PrintStatus(io);
+  } else if (UTIL1_strncmp((char*)cmd, "TmDt1 date", sizeof("TmDt1 date")-1)==0) {
+    *handled = TRUE;
+    return DateCmd(cmd, io);
+  } else if (UTIL1_strncmp((char*)cmd, "TmDt1 time", sizeof("TmDt1 time")-1)==0) {
+    *handled = TRUE;
+    return TimeCmd(cmd, io);
+  }
+  return ERR_OK;
+}
+
+/*
+** ===================================================================
+**     Method      :  TmDt1_DeInit (component GenericTimeDate)
+**     Description :
+**         Deinitializes the driver.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void TmDt1_DeInit(void)
+{
+  /* Nothing to do */
+}
+
+/*
+** ===================================================================
+**     Method      :  TmDt1_TicksToTime (component GenericTimeDate)
+**     Description :
+**         Transforms ticks into time information
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         ticks           - 
+**       * Time            - Pointer where to store the time
+**                           information
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+uint8_t TmDt1_TicksToTime(uint32_t ticks, TIMEREC *Time)
+{
+  Time->Hour = (uint8_t)(ticks/(3600*TmDt1_TICKS_PER_S)); /* number of hours */
+  ticks %= (3600*TmDt1_TICKS_PER_S);   /* remainder of ticks inside hour */
+  Time->Min = (uint8_t)(ticks/(60*TmDt1_TICKS_PER_S)); /* number of minutes */
+  ticks %= (60*TmDt1_TICKS_PER_S);     /* remainder of ticks inside minute */
+  Time->Sec = (uint8_t)(ticks/TmDt1_TICKS_PER_S); /* number of seconds */
+  ticks %= TmDt1_TICKS_PER_S;
+  Time->Sec100 = (uint8_t)((ticks*(1000/TmDt1_TICKS_PER_S))/10); /* number of 1/100 seconds */
+  return ERR_OK;
+}
+
+/*
+** ===================================================================
+**     Method      :  TmDt1_TimeToTicks (component GenericTimeDate)
+**     Description :
+**         Transforms time information into ticks
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**       * Time            - Pointer where to time information
+**       * ticks           - Pointer to where to store the ticks
+**     Returns     :
+**         ---             - Error code
+** ===================================================================
+*/
+uint8_t TmDt1_TimeToTicks(TIMEREC *Time, uint32_t *ticks)
+{
+  uint32_t cntr;
+
+  cntr = (3600UL*TmDt1_TICKS_PER_S*(uint32_t)Time->Hour)
+              + (60UL*TmDt1_TICKS_PER_S*(uint32_t)Time->Min)
+              + (TmDt1_TICKS_PER_S*(uint32_t)Time->Sec)
+              + ((TmDt1_TICKS_PER_S/100)*(uint32_t)Time->Sec100); /* Load given time re-calculated to TmDt1_TICK_TIME_MS ms ticks into software tick counter */
+  *ticks = cntr;
+  return ERR_OK;
 }
 
 /* END TmDt1. */

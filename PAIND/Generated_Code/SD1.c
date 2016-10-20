@@ -4,10 +4,10 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : SD_Card
-**     Version     : Component 01.178, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.182, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-18, 15:47, # CodeGen: 46
 **     Abstract    :
 **         Implements interface to SD card for FatFs
 **     Settings    :
@@ -17,7 +17,7 @@
 **          Wait Ready Timeout (ms)                        : 500
 **          Wait Cmd Timeout (ms)                          : 100
 **          Receive Block Timeout (ms)                     : 500
-**          SPI Block Transfer                             : no
+**          SPI Block Transfer                             : yes
 **          Hardware                                       : 
 **            SW SPI                                       : Disabled
 **            HW SPI                                       : Enabled
@@ -33,37 +33,33 @@
 **              non-LDD SS                                 : Disabled
 **            Activate                                     : Disabled
 **            Card detection                               : Enabled
-**              Card Detect is LOW active                  : yes
+**              Card Detect is LOW active                  : no
 **              LDD CD                                     : Enabled
 **                Card detection pin                       : LDDCDI
 **              non-LDD CD                                 : Disabled
 **            Report 'Card present' if no Card detection pin: yes
-**            Write protection                             : Enabled
-**              Write Protect is LOW active                : yes
-**              LDD WP                                     : Enabled
-**                Write Protect Pin                        : LDDWP
-**              non-LDD WP                                 : Disabled
+**            Write protection                             : Disabled
 **          System                                         : 
 **            Wait                                         : WAIT1
 **            Timeout                                      : TMOUT1
 **            RTOS                                         : Disabled
 **     Contents    :
-**         Init             - byte SD1_Init(void* unused);
-**         Deinit           - byte SD1_Deinit(void* unused);
 **         Activate         - void SD1_Activate(void);
 **         Deactivate       - void SD1_Deactivate(void);
 **         isWriteProtected - bool SD1_isWriteProtected(void);
 **         CardPresent      - bool SD1_CardPresent(void);
-**         WaitReady        - byte SD1_WaitReady(void);
-**         ReceiveDataBlock - bool SD1_ReceiveDataBlock(byte *data, word nofBytes);
-**         SendDataBlock    - bool SD1_SendDataBlock(byte *data, byte token, word nofBytes);
-**         SendCmd          - byte SD1_SendCmd(byte cmd, dword arg);
+**         WaitReady        - uint8_t SD1_WaitReady(void);
+**         ReceiveDataBlock - bool SD1_ReceiveDataBlock(uint8_t *data, uint16_t nofBytes);
+**         SendDataBlock    - bool SD1_SendDataBlock(uint8_t *data, uint8_t token, uint16_t nofBytes);
+**         SendCmd          - uint8_t SD1_SendCmd(uint8_t cmd, uint32_t arg);
 **         SetSlowMode      - void SD1_SetSlowMode(void);
 **         SetFastMode      - void SD1_SetFastMode(void);
 **         InitCommChannel  - void SD1_InitCommChannel(void);
+**         Deinit           - uint8_t SD1_Deinit(void* unused);
+**         Init             - uint8_t SD1_Init(void* unused);
 **
 **     License   :  Open Source (LGPL)
-**     Copyright : (c) Copyright Erich Styger, 2012-2015, all rights reserved.
+**     Copyright : (c) Copyright Erich Styger, 2012-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software implementing an SD card low level driver useful for the the ChaN FatFS, using Processor Expert.
 **     This is a free software and is opened for education,  research and commercial developments under license policy of following terms:
@@ -89,15 +85,15 @@
 
 static volatile DSTATUS Stat = STA_NOINIT; /* Disk status */
 static uint8_t CardType = CT_SD1;       /* Card type flags */
-static uint8_t speedMode = SD1_ACTIVATE_MODE_SLOW; /* current speed mode */
+static uint8_t currentSpeedMode = SD1_ACTIVATE_MODE_NONE; /* current speed mode */
 
 enum { /* SD card response codes */
   SD1_OK = 0,
   SD1_IDLE = 1
 };
 
-#define SD1_SPI_WRITE_BLOCK_ENABLED          0
-#define SD1_SPI_WRITE_READ_BLOCK_ENABLED     0
+#define SD1_SPI_WRITE_BLOCK_ENABLED          1
+#define SD1_SPI_WRITE_READ_BLOCK_ENABLED     1
 
 /* different wait counters to deal with slow SD cards */
 #define SD1_TIMEOUT_READY_MS       500  /* user configured wait timeout until the device is ready */
@@ -233,7 +229,7 @@ DRESULT SD1_disk_write (
   }
   if (count == 1) {                     /* Single block write */
     if (  (SD1_SendCmd(SD1_CMD24, sector) == 0) /* WRITE_BLOCK */
-        && SD1_SendDataBlock((byte*)buff, 0xFE, SD1_BLOCK_SIZE))
+        && SD1_SendDataBlock((uint8_t*)buff, 0xFE, SD1_BLOCK_SIZE))
     {
       count = 0;
     }
@@ -243,7 +239,7 @@ DRESULT SD1_disk_write (
     }
     if (SD1_SendCmd(SD1_CMD25, sector) == 0) { /* WRITE_MULTIPLE_BLOCK */
       do {
-        if (!SD1_SendDataBlock((byte*)buff, 0xFC, SD1_BLOCK_SIZE)) {
+        if (!SD1_SendDataBlock((uint8_t*)buff, 0xFC, SD1_BLOCK_SIZE)) {
           break;
         }
         buff += SD1_BLOCK_SIZE;
@@ -330,7 +326,7 @@ DRESULT SD1_disk_ioctl (
           } else {                      /* SDC ver 1.XX or MMC*/
             n = (uint8_t)((csd[5] & 15) + ((csd[10] & 128) >> 7) + ((csd[9] & 3) << 1) + 2);
             csize = (uint16_t)((csd[8] >> 6) + ((uint16_t)csd[7] << 2) + ((uint16_t)(csd[6] & 3) << 10) + 1);
-            *(uint32_t*)buff = (uint32_t)csize << (byte)(n - 9);
+            *(uint32_t*)buff = (uint32_t)csize << (uint8_t)(n - 9);
           }
         }
         break;
@@ -351,7 +347,7 @@ DRESULT SD1_disk_ioctl (
         } else {                        /* SDC ver 1.XX or MMC */
           if ((SD1_SendCmd(SD1_CMD9, 0) == 0) && SD1_ReceiveDataBlock(csd, 16)) {        /* Read CSD */
             if (CardType & CT_SD1) {    /* SDC ver 1.XX */
-              *(uint32_t*)buff = (uint32_t)((((csd[10] & 63) << 1) + ((uint16_t)(csd[11] & 128) >> 7) + 1) << (byte)((csd[13] >> 6) - 1));
+              *(uint32_t*)buff = (uint32_t)((((csd[10] & 63) << 1) + ((uint16_t)(csd[11] & 128) >> 7) + 1) << (uint8_t)((csd[13] >> 6) - 1));
             } else {                    /* MMC */
               *(uint32_t*)buff = (uint32_t)(((uint16_t)((csd[10] & 124) >> 2) + 1) * (((csd[11] & 3) << 3) + ((csd[11] & 224) >> 5) + 1));
             }
@@ -466,19 +462,39 @@ static void SD1_SPI_WRITE_READ_BLOCK(unsigned char *writeP, unsigned char *readP
 
 
 #if SD1_SPI_WRITE_BLOCK_ENABLED || SD1_SPI_WRITE_READ_BLOCK_ENABLED
-#define SPI_WRITE_READ_BLOCK_SIZE_DUMMY 512 /* 512 bytes of dummy values */
-static const uint8_t dummyArr[SPI_WRITE_READ_BLOCK_SIZE_DUMMY] = {
-  SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
-  SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
-  SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
-  SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
-  SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
-  SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY
-};
+#if SD1_BLOCK_SIZE==512
+  #define SPI_WRITE_READ_BLOCK_SIZE_DUMMY 512 /* 512 bytes of dummy values */
+  static const uint8_t dummyArr[SPI_WRITE_READ_BLOCK_SIZE_DUMMY] = {
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY
+  };
+#elif SD1_BLOCK_SIZE==1024
+  #define SPI_WRITE_READ_BLOCK_SIZE_DUMMY 1024 /* 1024 bytes of dummy values */
+  static const uint8_t dummyArr[SPI_WRITE_READ_BLOCK_SIZE_DUMMY] = {
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY,
+    SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY, SD1_DUMMY
+  };
+#else
+  #error "only 512 and 1024 block size supported"
+#endif
 #endif
 
 /* Internal method prototypes */
-static byte SendCommand(byte cmd, byte *arg, byte response);
+static uint8_t SendCommand(uint8_t cmd, uint8_t *arg, uint8_t response);
 
 /*
 ** ===================================================================
@@ -526,9 +542,9 @@ void SD1_Deactivate(void)
 **                           ERR_BUSY: device is still busy
 ** ===================================================================
 */
-byte SD1_WaitReady(void)
+uint8_t SD1_WaitReady(void)
 {
-  byte tmp;
+  uint8_t tmp;
   TMOUT1_CounterHandle timeout;
 
   SD1_Activate();
@@ -567,9 +583,9 @@ byte SD1_WaitReady(void)
 **                           otherwise.
 ** ===================================================================
 */
-bool SD1_ReceiveDataBlock(byte *data, word nofBytes)
+bool SD1_ReceiveDataBlock(uint8_t *data, uint16_t nofBytes)
 {
-  byte tmp;
+  uint8_t tmp;
   TMOUT1_CounterHandle timeout;
   word cnt = 512; /* polling counter */
 
@@ -633,9 +649,9 @@ bool SD1_ReceiveDataBlock(byte *data, word nofBytes)
 **                           failure.
 ** ===================================================================
 */
-bool SD1_SendDataBlock(byte *data, byte token, word nofBytes)
+bool SD1_SendDataBlock(uint8_t *data, uint8_t token, uint16_t nofBytes)
 {
-  byte resp;
+  uint8_t resp;
 
   if (SD1_WaitReady()!=ERR_OK) {
     return FALSE;                       /* device not ready */
@@ -688,9 +704,9 @@ bool SD1_SendDataBlock(byte *data, byte token, word nofBytes)
 **         ---             - device response
 ** ===================================================================
 */
-byte SD1_SendCmd(byte cmd, dword arg)
+uint8_t SD1_SendCmd(uint8_t cmd, uint32_t arg)
 {
-  byte n, res;
+  uint8_t n, res;
   TMOUT1_CounterHandle timeout;
 
   if (cmd&0x80) {                       /* ACMD<n> is the command sequence of CMD55-CMD<n> */
@@ -707,13 +723,13 @@ byte SD1_SendCmd(byte cmd, dword arg)
   SD1_Activate();
   /* Send command packet */
   SD1_SPI_WRITE(cmd);                   /* Start + Command index */
-  n = (byte)(arg>>24);
+  n = (uint8_t)(arg>>24);
   SD1_SPI_WRITE(n);                     /* Argument[31..24] */
-  n = (byte)(arg>>16);
+  n = (uint8_t)(arg>>16);
   SD1_SPI_WRITE(n);                     /* Argument[23..16] */
-  n = (byte)(arg>>8);
+  n = (uint8_t)(arg>>8);
   SD1_SPI_WRITE(n);                     /* Argument[15..8] */
-  SD1_SPI_WRITE((byte)arg);             /* Argument[7..0] */
+  SD1_SPI_WRITE((uint8_t)arg);          /* Argument[7..0] */
   if (cmd == SD1_CMD0) {
     n = 0x95;                           /* Valid CRC for CMD0(0) */
   } else if (cmd == SD1_CMD8) {
@@ -769,11 +785,11 @@ bool SD1_isWriteProtected(void)
 **         This method is internal. It is used by Processor Expert only.
 ** ===================================================================
 */
-static byte SendCommand(byte cmd, byte *arg, byte response)
+static uint8_t SendCommand(uint8_t cmd, uint8_t *arg, uint8_t response)
 {
   #define NOF_WAIT_ITERATIONS 3
-  byte u8Temp=0;
-  byte u8Counter;
+  uint8_t u8Temp=0;
+  uint8_t u8Counter;
 
   SD1_Activate();
   SD1_SPI_WRITE(cmd);                   /* Send Start byte */
@@ -809,7 +825,7 @@ static byte SendCommand(byte cmd, byte *arg, byte response)
 **         ---             - Error code
 ** ===================================================================
 */
-byte SD1_Init(void* unused)
+uint8_t SD1_Init(void* unused)
 {
   /* The behavior of SD cards in SPI mode is basically the same as for any SPI slave device.
      The maximum transfer rate of the SD card in SPI mode is 25 Mbps, but in the initialization process the
@@ -822,7 +838,7 @@ byte SD1_Init(void* unused)
   dword arg;
   TMOUT1_CounterHandle timeout;
   bool isTimeout = FALSE;
-  byte cnt;
+  uint8_t cnt;
 
   (void)unused;
   /* -------------------------------- Init & Slow Mode -------------------------------- */
@@ -830,7 +846,7 @@ byte SD1_Init(void* unused)
   /*lint -save -e522 function lacks side-effects */
   WAIT1_Waitms(1);                      /* wait at least for 1 ms on insertion and power on */
   /*lint -restore */
-  speedMode = SD1_ACTIVATE_MODE_SLOW;
+  currentSpeedMode = SD1_ACTIVATE_MODE_NONE;
   SD1_Activate();                       /* select slave */
   SD1_SetSlowMode();                    /* set the SPI clock to 375 kbps. This is required for compatibility across a wide range of SD and MMC cards. */
   SD1_DISABLE_SS();                     /* disable slave (CS high) */
@@ -844,7 +860,7 @@ byte SD1_Init(void* unused)
   /* -------------------------------- IDLE Command -------------------------------- */
   arg = 0;
   timeout = TMOUT1_GetCounter(SD1_TIMEOUT_READY_MS/TMOUT1_TICK_PERIOD_MS); /* timeout */
-  while (SendCommand(SD1_CMD0, (byte*)&arg, SD1_IDLE) != ERR_OK) {
+  while (SendCommand(SD1_CMD0, (uint8_t*)&arg, SD1_IDLE) != ERR_OK) {
     if (TMOUT1_CounterExpired(timeout)) {
       isTimeout = TRUE;                /* indicate a timeout */
       break;
@@ -871,9 +887,9 @@ byte SD1_Init(void* unused)
 **         This method is internal. It is used by Processor Expert only.
 ** ===================================================================
 */
-byte SD1_ReceiveByte(void)
+uint8_t SD1_ReceiveByte(void)
 {
-  byte data;
+  uint8_t data;
 
   SD1_Activate();
   SD1_SPI_WRITE_READ(SD1_DUMMY, &data); /* send dummy value, poll response */
@@ -911,14 +927,17 @@ bool SD1_CardPresent(void)
 */
 void SD1_SetSlowMode(void)
 {
+  if (currentSpeedMode!=SD1_ACTIVATE_MODE_SLOW) {
+    /* not already in slow mode */
 #if 0 /* if using LDD component, do not disable the SPI, as SD1_SPI_SetSlowMode() (SelectConfiguration()) only works with enabled device! */
-  SD1_SPI_Disable();
+    SD1_SPI_Disable();
 #endif
-  SD1_SPI_SetSlowMode();                /* the SPI clock is set to the maximum supported by the MCU and allowed by the SD card */
-  speedMode = SD1_ACTIVATE_MODE_SLOW;
+    SD1_SPI_SetSlowMode();              /* the SPI clock is set to the maximum supported by the MCU and allowed by the SD card */
+    currentSpeedMode = SD1_ACTIVATE_MODE_SLOW;
 #if 0 /* if using LDD component, do not disable the SPI, as SD1_SPI_SetSlowMode() (SelectConfiguration()) only works with enabled device! */
-  SD1_SPI_Enable();
+    SD1_SPI_Enable();
 #endif
+  } /* if */
 }
 
 /*
@@ -932,14 +951,17 @@ void SD1_SetSlowMode(void)
 */
 void SD1_SetFastMode(void)
 {
+  if (currentSpeedMode!=SD1_ACTIVATE_MODE_FAST) {
+    /* not already in fast mode */
 #if 0 /* if using LDD component, do not disable the SPI, as SD1_SPI_SetSlowMode() (SelectConfiguration()) only works with enabled device! */
-  SD1_SPI_Disable();
+    SD1_SPI_Disable();
 #endif
-  SD1_SPI_SetFastMode();                /* the SPI clock is set to the maximum supported by the MCU and allowed by the SD card */
-  speedMode = SD1_ACTIVATE_MODE_FAST;
+    SD1_SPI_SetFastMode();              /* the SPI clock is set to the maximum supported by the MCU and allowed by the SD card */
+    currentSpeedMode = SD1_ACTIVATE_MODE_FAST;
 #if 0 /* if using LDD component, do not disable the SPI, as SD1_SPI_SetSlowMode() (SelectConfiguration()) only works with enabled device! */
-  SD1_SPI_Enable();
+    SD1_SPI_Enable();
 #endif
+  } /* if */
 }
 
 /*
@@ -961,9 +983,9 @@ void SD1_InitCommChannel(void)
     - Shift clock idle polarity: low
     - Clock edge: falling edge
   */
-  if (speedMode==SD1_ACTIVATE_MODE_FAST) {
+  if (currentSpeedMode==SD1_ACTIVATE_MODE_FAST) {
     SD1_SetFastMode(); /* use fast mode. */
-  } else {
+  } else if (currentSpeedMode==SD1_ACTIVATE_MODE_SLOW) {
     SD1_SetSlowMode(); /* use slow mode. */
   }
 }
@@ -980,7 +1002,7 @@ void SD1_InitCommChannel(void)
 **         ---             - Error code
 ** ===================================================================
 */
-byte SD1_Deinit(void* unused)
+uint8_t SD1_Deinit(void* unused)
 {
   (void)unused;
   return ERR_OK;

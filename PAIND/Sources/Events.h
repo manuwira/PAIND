@@ -50,7 +50,6 @@
 #include "Bein_L.h"
 #include "Pwm5.h"
 #include "PwmLdd5.h"
-#include "TU2.h"
 #include "Bein_R.h"
 #include "Pwm6.h"
 #include "PwmLdd6.h"
@@ -61,8 +60,6 @@
 #include "AS1.h"
 #include "ASerialLdd1.h"
 #include "UTIL1.h"
-#include "SYS1.h"
-#include "RTT1.h"
 #include "CLS1.h"
 #include "Buzzer.h"
 #include "BitIoLdd1.h"
@@ -81,24 +78,15 @@
 #include "AdcLdd1.h"
 #include "Switch_B.h"
 #include "BitIoLdd6.h"
-#include "RF1.h"
-#include "CE1.h"
-#include "BitIoLdd7.h"
-#include "CSN1.h"
-#include "BitIoLdd8.h"
-#include "SM1.h"
-#include "SMasterLdd1.h"
 #include "TRIG.h"
 #include "TMOUT1.h"
 #include "SD1.h"
 #include "SS1.h"
 #include "CD1.h"
-#include "WP1.h"
 #include "SM2.h"
 #include "TU3.h"
 #include "FAT1.h"
 #include "TmDt1.h"
-#include "TimeDateLdd1.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -120,7 +108,7 @@ extern "C" {
 void Cpu_OnNMIINT(void);
 
 
-void FRTOS1_vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName);
+void FRTOS1_vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName);
 /*
 ** ===================================================================
 **     Event       :  FRTOS1_vApplicationStackOverflowHook (module Events)
@@ -146,20 +134,6 @@ void FRTOS1_vApplicationTickHook(void);
 **     Description :
 **         If enabled, this hook will be called by the RTOS for every
 **         tick increment.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-
-void FRTOS1_vApplicationIdleHook(void);
-/*
-** ===================================================================
-**     Event       :  FRTOS1_vApplicationIdleHook (module Events)
-**
-**     Component   :  FRTOS1 [FreeRTOS]
-**     Description :
-**         If enabled, this hook will be called when the RTOS is idle.
-**         This might be a good place to go into low power mode.
 **     Parameters  : None
 **     Returns     : Nothing
 ** ===================================================================
@@ -211,19 +185,6 @@ void ANALOG_IN_OnCalibrationEnd(void);
 ** ===================================================================
 */
 
-void RF1_OnInterrupt(void);
-/*
-** ===================================================================
-**     Event       :  RF1_OnInterrupt (module Events)
-**
-**     Component   :  RF1 [nRF24L01]
-**     Description :
-**         Called in case of an interrupt from the transcevier
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-
 /*
 ** ===================================================================
 **     Event       :  TU1_OnChannel0 (module Events)
@@ -244,25 +205,6 @@ void RF1_OnInterrupt(void);
 */
 /* ===================================================================*/
 void TU1_OnChannel0(LDD_TUserData *UserDataPtr);
-
-/*
-** ===================================================================
-**     Event       :  SM2_OnBlockSent (module Events)
-**
-**     Component   :  SM2 [SPIMaster_LDD]
-*/
-/*!
-**     @brief
-**         This event is called after the last character from the
-**         output buffer is moved to the transmitter. This event is
-**         available only if the SendBlock method is enabled.
-**     @param
-**         UserDataPtr     - Pointer to the user or
-**                           RTOS specific data. The pointer is passed
-**                           as the parameter of Init method. 
-*/
-/* ===================================================================*/
-void SM2_OnBlockSent(LDD_TUserData *UserDataPtr);
 
 /*
 ** ===================================================================

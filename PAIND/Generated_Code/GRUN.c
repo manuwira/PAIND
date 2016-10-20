@@ -4,14 +4,15 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : LED
-**     Version     : Component 01.066, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.072, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **          This component implements a universal driver for a single LED.
 **     Settings    :
 **          Component name                                 : GRUN
+**          SDK                                            : KSDK1
 **          Turned On with initialization                  : yes
 **          HW Interface                                   : 
 **            Anode on port side, HIGH is ON               : no
@@ -20,17 +21,17 @@
 **            PWM                                          : Disabled
 **          Shell                                          : Disabled
 **     Contents    :
-**         Init       - void GRUN_Init(void);
-**         Deinit     - void GRUN_Deinit(void);
 **         On         - void GRUN_On(void);
 **         Off        - void GRUN_Off(void);
 **         Neg        - void GRUN_Neg(void);
 **         Get        - uint8_t GRUN_Get(void);
 **         Put        - void GRUN_Put(uint8_t val);
 **         SetRatio16 - void GRUN_SetRatio16(uint16_t ratio);
+**         Deinit     - void GRUN_Deinit(void);
+**         Init       - void GRUN_Init(void);
 **
 **     License   : Open Source (LGPL)
-**     Copyright : Erich Styger, 2013-2015, all rights reserved.
+**     Copyright : Erich Styger, 2013-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software implementing a driver using Processor Expert.
 **     This is a free software and is opened for education, research and commercial developments under license policy of following terms:
@@ -120,22 +121,6 @@ uint8_t GRUN_Get(void)
 
 /*
 ** ===================================================================
-**     Method      :  GRUN_Init (component LED)
-**     Description :
-**         Performs the LED driver initialization.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-/*
-void GRUN_Init(void)
-{
-  *** This method is implemented as macro in the header file
-}
-*/
-
-/*
-** ===================================================================
 **     Method      :  GRUN_Put (component LED)
 **     Description :
 **         Turns the LED on or off.
@@ -155,6 +140,23 @@ void GRUN_Put(uint8_t val)
 
 /*
 ** ===================================================================
+**     Method      :  GRUN_Init (component LED)
+**     Description :
+**         Performs the LED driver initialization.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void GRUN_Init(void)
+{
+#if KSDK1_SDK_VERSION_USED != KSDK1_SDK_VERSION_NONE
+  LEDpin2_Init();
+#endif
+  GRUN_On();
+}
+
+/*
+** ===================================================================
 **     Method      :  GRUN_Deinit (component LED)
 **     Description :
 **         Deinitializes the driver
@@ -164,6 +166,9 @@ void GRUN_Put(uint8_t val)
 */
 void GRUN_Deinit(void)
 {
+#if KSDK1_SDK_VERSION_USED != KSDK1_SDK_VERSION_NONE
+  LEDpin2_Deinit();
+#endif
 }
 
 /*

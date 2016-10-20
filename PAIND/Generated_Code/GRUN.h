@@ -4,14 +4,15 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : LED
-**     Version     : Component 01.066, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.072, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **          This component implements a universal driver for a single LED.
 **     Settings    :
 **          Component name                                 : GRUN
+**          SDK                                            : KSDK1
 **          Turned On with initialization                  : yes
 **          HW Interface                                   : 
 **            Anode on port side, HIGH is ON               : no
@@ -20,17 +21,17 @@
 **            PWM                                          : Disabled
 **          Shell                                          : Disabled
 **     Contents    :
-**         Init       - void GRUN_Init(void);
-**         Deinit     - void GRUN_Deinit(void);
 **         On         - void GRUN_On(void);
 **         Off        - void GRUN_Off(void);
 **         Neg        - void GRUN_Neg(void);
 **         Get        - uint8_t GRUN_Get(void);
 **         Put        - void GRUN_Put(uint8_t val);
 **         SetRatio16 - void GRUN_SetRatio16(uint16_t ratio);
+**         Deinit     - void GRUN_Deinit(void);
+**         Init       - void GRUN_Init(void);
 **
 **     License   : Open Source (LGPL)
-**     Copyright : Erich Styger, 2013-2015, all rights reserved.
+**     Copyright : Erich Styger, 2013-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software implementing a driver using Processor Expert.
 **     This is a free software and is opened for education, research and commercial developments under license policy of following terms:
@@ -53,16 +54,22 @@
 #define __GRUN_H
 
 /* MODULE GRUN. */
-
-/* Include shared modules, which are used for whole project */
-#include "PE_Types.h"
-#include "PE_Error.h"
-#include "PE_Const.h"
-#include "IO_Map.h"
+#ifndef __HIWARE__ /* Hiware compiler (S08, S12) only supports C89 */
+  #include <stdint.h>
+#endif
 /* Include inherited beans */
+#include "KSDK1.h"
 #include "LEDpin2.h"
 
-#include "Cpu.h"
+#if KSDK1_SDK_VERSION_USED == KSDK1_SDK_VERSION_NONE
+  /* Include shared modules, which are used for whole project */
+  #include "PE_Types.h"
+  #include "PE_Error.h"
+  #include "PE_Const.h"
+  #include "IO_Map.h"
+  #include "Cpu.h"
+#endif
+
 
 #define GRUN_ClrVal()    LEDpin2_ClrVal() /* put the pin on low level */
 #define GRUN_SetVal()    LEDpin2_SetVal() /* put the pin on high level */
@@ -117,7 +124,7 @@
 ** ===================================================================
 */
 
-#define GRUN_Init() GRUN_On()
+void GRUN_Init(void);
 /*
 ** ===================================================================
 **     Method      :  GRUN_Init (component LED)

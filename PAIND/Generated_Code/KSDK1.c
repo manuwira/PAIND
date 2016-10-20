@@ -4,14 +4,15 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : KinetisSDK
-**     Version     : Component 01.001, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.005, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **
 **     Settings    :
 **          Component name                                 : KSDK1
+**          SDK Version                                    : none
 **     Contents    :
 **         No public methods
 **

@@ -4,14 +4,15 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : LED
-**     Version     : Component 01.066, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.072, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-17, 22:50, # CodeGen: 39
 **     Abstract    :
 **          This component implements a universal driver for a single LED.
 **     Settings    :
 **          Component name                                 : ROT
+**          SDK                                            : KSDK1
 **          Turned On with initialization                  : yes
 **          HW Interface                                   : 
 **            Anode on port side, HIGH is ON               : no
@@ -20,17 +21,17 @@
 **            PWM                                          : Disabled
 **          Shell                                          : Disabled
 **     Contents    :
-**         Init       - void ROT_Init(void);
-**         Deinit     - void ROT_Deinit(void);
 **         On         - void ROT_On(void);
 **         Off        - void ROT_Off(void);
 **         Neg        - void ROT_Neg(void);
 **         Get        - uint8_t ROT_Get(void);
 **         Put        - void ROT_Put(uint8_t val);
 **         SetRatio16 - void ROT_SetRatio16(uint16_t ratio);
+**         Deinit     - void ROT_Deinit(void);
+**         Init       - void ROT_Init(void);
 **
 **     License   : Open Source (LGPL)
-**     Copyright : Erich Styger, 2013-2015, all rights reserved.
+**     Copyright : Erich Styger, 2013-2016, all rights reserved.
 **     Web       : www.mcuoneclipse.com
 **     This an open source software implementing a driver using Processor Expert.
 **     This is a free software and is opened for education, research and commercial developments under license policy of following terms:
@@ -120,22 +121,6 @@ uint8_t ROT_Get(void)
 
 /*
 ** ===================================================================
-**     Method      :  ROT_Init (component LED)
-**     Description :
-**         Performs the LED driver initialization.
-**     Parameters  : None
-**     Returns     : Nothing
-** ===================================================================
-*/
-/*
-void ROT_Init(void)
-{
-  *** This method is implemented as macro in the header file
-}
-*/
-
-/*
-** ===================================================================
 **     Method      :  ROT_Put (component LED)
 **     Description :
 **         Turns the LED on or off.
@@ -155,6 +140,23 @@ void ROT_Put(uint8_t val)
 
 /*
 ** ===================================================================
+**     Method      :  ROT_Init (component LED)
+**     Description :
+**         Performs the LED driver initialization.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void ROT_Init(void)
+{
+#if KSDK1_SDK_VERSION_USED != KSDK1_SDK_VERSION_NONE
+  LEDpin1_Init();
+#endif
+  ROT_On();
+}
+
+/*
+** ===================================================================
 **     Method      :  ROT_Deinit (component LED)
 **     Description :
 **         Deinitializes the driver
@@ -164,6 +166,9 @@ void ROT_Put(uint8_t val)
 */
 void ROT_Deinit(void)
 {
+#if KSDK1_SDK_VERSION_USED != KSDK1_SDK_VERSION_NONE
+  LEDpin1_Deinit();
+#endif
 }
 
 /*

@@ -6,7 +6,7 @@
 **     Component   : PE_Types
 **     Version     : Driver 01.01
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:46, # CodeGen: 58
+**     Date/Time   : 2016-10-20, 09:42, # CodeGen: 64
 **     Abstract    :
 **         PE_Types.h - contains definitions of basic types,
 **         register access macros and hardware specific macros
@@ -219,17 +219,11 @@ typedef unsigned long int       uint32;
 #define PE_LDD_COMPONENT_BitIoLdd5_ID            0x0CU
 #define PE_LDD_COMPONENT_AdcLdd1_ID              0x0DU
 #define PE_LDD_COMPONENT_BitIoLdd6_ID            0x0EU
-#define PE_LDD_COMPONENT_SMasterLdd1_ID          0x0FU
-#define PE_LDD_COMPONENT_BitIoLdd7_ID            0x10U
-#define PE_LDD_COMPONENT_BitIoLdd8_ID            0x11U
-#define PE_LDD_COMPONENT_TRIG_ID                 0x12U
-#define PE_LDD_COMPONENT_SM2_ID                  0x13U
-#define PE_LDD_COMPONENT_SS1_ID                  0x14U
-#define PE_LDD_COMPONENT_CD1_ID                  0x15U
-#define PE_LDD_COMPONENT_WP1_ID                  0x16U
-#define PE_LDD_COMPONENT_TU2_ID                  0x17U
-#define PE_LDD_COMPONENT_TimeDateLdd1_ID         0x18U
-#define PE_LDD_COMPONENT_TU3_ID                  0x19U
+#define PE_LDD_COMPONENT_TRIG_ID                 0x0FU
+#define PE_LDD_COMPONENT_TU3_ID                  0x10U
+#define PE_LDD_COMPONENT_SM2_ID                  0x11U
+#define PE_LDD_COMPONENT_SS1_ID                  0x12U
+#define PE_LDD_COMPONENT_CD1_ID                  0x13U
 
 /*
 ** ===================================================================
@@ -1258,7 +1252,7 @@ typedef struct LDD_USB_TDevDescriptor_Struct {
   uint16_t  bcdDevice;                 /*!< Device release number in binary-coded decimal */
   uint8_t   iManufacturer;             /*!< Index of string descriptor describing manufacturer */
   uint8_t   iProduct;                  /*!< Index of string descriptor describing product */
-  uint8_t   iSerialNumber;             /*!< Index of string descriptor describing the deviceï¿½s serial number */
+  uint8_t   iSerialNumber;             /*!< Index of string descriptor describing the device’s serial number */
   uint8_t   bNumConfigurations;        /*!< Number of possible configurations */
 } LDD_USB_TDevDescriptor;
 

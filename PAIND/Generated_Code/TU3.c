@@ -7,7 +7,7 @@
 **     Version     : Component 01.164, Driver 01.11, CPU db: 3.00.000
 **     Repository  : Kinetis
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 10:46, # CodeGen: 58
+**     Date/Time   : 2016-10-20, 09:04, # CodeGen: 63
 **     Abstract    :
 **          This TimerUnit component provides a low level API for unified hardware access across
 **          various timer devices using the Prescaler-Counter-Compare-Capture timer structure.
@@ -19,9 +19,9 @@
 **          Counter width                                  : 16 bits
 **          Value type                                     : Optimal
 **          Input clock source                             : Internal
-**            Counter frequency                            : 2.62144 MHz
+**            Counter frequency                            : 3 MHz
 **          Counter restart                                : On-overrun
-**            Overrun period                               : 25 ms
+**            Overrun period                               : 21.845333 ms
 **            Interrupt                                    : Enabled
 **              Interrupt                                  : INT_TPM2
 **              Interrupt priority                         : medium priority
@@ -29,10 +29,10 @@
 **            Channel 0                                    : 
 **              Mode                                       : Capture
 **                Capture                                  : TPM2_C0V
-**                Capture input pin                        : ADC0_DP3/ADC0_SE3/PTE22/TPM2_CH0/UART2_TX
+**                Capture input pin                        : ADC0_SE12/TSI0_CH7/PTB2/I2C0_SCL/TPM2_CH0
 **                Capture input signal                     : US_Echo_D2
 **                Edge                                     : both edges
-**                Maximum time of event                    : 25.00001792 ms
+**                Maximum time of event                    : 21.845311488 ms
 **                Interrupt                                : Enabled
 **                  Interrupt                              : INT_TPM2
 **                  Interrupt priority                     : medium priority
@@ -59,7 +59,9 @@
 **            Clock configuration 6                        : This component disabled
 **            Clock configuration 7                        : This component disabled
 **     Contents    :
-**         Init - LDD_TDeviceData* TU3_Init(LDD_TUserData *UserDataPtr);
+**         Init            - LDD_TDeviceData* TU3_Init(LDD_TUserData *UserDataPtr);
+**         ResetCounter    - LDD_TError TU3_ResetCounter(LDD_TDeviceData *DeviceDataPtr);
+**         GetCaptureValue - LDD_TError TU3_GetCaptureValue(LDD_TDeviceData *DeviceDataPtr, uint8_t...
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -117,6 +119,9 @@ extern "C" {
 
 /* List of channels used by component */
 static const uint8_t ChannelDevice[TU3_NUMBER_OF_CHANNELS] = {0x00U};
+
+/* Table of channels mode / 0 - compare mode, 1 - capture mode */
+static const uint8_t ChannelMode[TU3_NUMBER_OF_CHANNELS] = {0x01U};
 
 
 typedef struct {
@@ -184,13 +189,13 @@ LDD_TDeviceData* TU3_Init(LDD_TUserData *UserDataPtr)
   TPM2_MOD = TPM_MOD_MOD(0xFFFF);      /* Set up modulo register */
   /* TPM2_C0SC: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,CHF=0,CHIE=1,MSB=0,MSA=0,ELSB=1,ELSA=1,??=0,DMA=0 */
   TPM2_C0SC = (TPM_CnSC_CHIE_MASK | TPM_CnSC_ELSB_MASK | TPM_CnSC_ELSA_MASK); /* Set up channel status and control register */
-  /* PORTE_PCR22: ISF=0,MUX=3 */
-  PORTE_PCR22 = (uint32_t)((PORTE_PCR22 & (uint32_t)~(uint32_t)(
-                 PORT_PCR_ISF_MASK |
-                 PORT_PCR_MUX(0x04)
-                )) | (uint32_t)(
-                 PORT_PCR_MUX(0x03)
-                ));
+  /* PORTB_PCR2: ISF=0,MUX=3 */
+  PORTB_PCR2 = (uint32_t)((PORTB_PCR2 & (uint32_t)~(uint32_t)(
+                PORT_PCR_ISF_MASK |
+                PORT_PCR_MUX(0x04)
+               )) | (uint32_t)(
+                PORT_PCR_MUX(0x03)
+               ));
   DeviceDataPrv->EnEvents = 0x0101U;   /* Enable selected events */
   /* NVIC_IPR4: PRI_19=0x80 */
   NVIC_IPR4 = (uint32_t)((NVIC_IPR4 & (uint32_t)~(uint32_t)(
@@ -200,11 +205,83 @@ LDD_TDeviceData* TU3_Init(LDD_TUserData *UserDataPtr)
               ));
   /* NVIC_ISER: SETENA|=0x00080000 */
   NVIC_ISER |= NVIC_ISER_SETENA(0x00080000);
-  /* TPM2_SC: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,DMA=0,TOF=0,TOIE=1,CPWMS=0,CMOD=1,PS=3 */
-  TPM2_SC = (TPM_SC_TOIE_MASK | TPM_SC_CMOD(0x01) | TPM_SC_PS(0x03)); /* Set up status and control register */
+  /* TPM2_SC: ??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,??=0,DMA=0,TOF=0,TOIE=1,CPWMS=0,CMOD=1,PS=4 */
+  TPM2_SC = (TPM_SC_TOIE_MASK | TPM_SC_CMOD(0x01) | TPM_SC_PS(0x04)); /* Set up status and control register */
   /* Registration of the device structure */
   PE_LDD_RegisterDeviceStructure(PE_LDD_COMPONENT_TU3_ID,DeviceDataPrv);
   return ((LDD_TDeviceData *)DeviceDataPrv); /* Return pointer to the device data structure */
+}
+
+/*
+** ===================================================================
+**     Method      :  TU3_ResetCounter (component TimerUnit_LDD)
+*/
+/*!
+**     @brief
+**         Resets counter. If counter is counting up then it is set to
+**         zero. If counter is counting down then counter is updated to
+**         the reload value.
+**         The method is not available if HW doesn't allow resetting of
+**         the counter.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK 
+**                           ERR_SPEED - The component does not work in
+**                           the active clock configuration
+*/
+/* ===================================================================*/
+LDD_TError TU3_ResetCounter(LDD_TDeviceData *DeviceDataPtr)
+{
+  (void)DeviceDataPtr;                 /* Parameter is not used, suppress unused argument warning */
+  TPM_PDD_InitializeCounter(TPM2_BASE_PTR);
+  return ERR_OK;                       /* OK */
+}
+
+/*
+** ===================================================================
+**     Method      :  TU3_GetCaptureValue (component TimerUnit_LDD)
+*/
+/*!
+**     @brief
+**         Returns the content of capture register specified by the
+**         parameter ChannelIdx. This method is available when at least
+**         one channel is configured.
+**     @param
+**         DeviceDataPtr   - Device data structure
+**                           pointer returned by [Init] method.
+**     @param
+**         ChannelIdx      - Index of the component
+**                           channel.
+**     @param
+**         ValuePtr        - Pointer to return value of the
+**                           capture register.
+**     @return
+**                         - Error code, possible codes:
+**                           ERR_OK - OK 
+**                           ERR_PARAM_INDEX - ChannelIdx parameter is
+**                           out of possible range
+**                           ERR_NOTAVAIL -  The capture mode is not
+**                           selected for selected channel.
+**                           ERR_SPEED - The component does not work in
+**                           the active clock configuration
+*/
+/* ===================================================================*/
+LDD_TError TU3_GetCaptureValue(LDD_TDeviceData *DeviceDataPtr, uint8_t ChannelIdx, TU3_TValueType *ValuePtr)
+{
+  (void)DeviceDataPtr;                 /* Parameter is not used, suppress unused argument warning */
+  /* Parameter test - this test can be disabled by setting the "Ignore range checking"
+     property to the "yes" value in the "Configuration inspector" */
+  if (ChannelIdx > LAST_CHANNEL) {     /* Is the channel index out of range? */
+    return ERR_PARAM_INDEX;            /* If yes then error */
+  }
+  if ((ChannelMode[ChannelIdx]) != 1u) { /* Is the channel in capture mode? */
+    return ERR_NOTAVAIL;               /* If not then error */
+  }
+  *ValuePtr = (TU3_TValueType)(TPM_PDD_ReadChannelValueReg(TPM2_BASE_PTR, ChannelDevice[ChannelIdx]));
+  return ERR_OK;                       /* OK */
 }
 
 /*

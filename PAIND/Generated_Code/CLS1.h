@@ -4,28 +4,27 @@
 **     Project     : PAIND
 **     Processor   : MKL25Z128VLK4
 **     Component   : Shell
-**     Version     : Component 01.079, Driver 01.00, CPU db: 3.00.000
+**     Version     : Component 01.085, Driver 01.00, CPU db: 3.00.000
 **     Repository  : My Components
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2016-10-13, 09:56, # CodeGen: 52
+**     Date/Time   : 2016-10-18, 16:13, # CodeGen: 50
 **     Abstract    :
 **
 **     Settings    :
 **          Component name                                 : CLS1
-**          Echo                                           : yes
+**          Echo                                           : no
 **          Prompt                                         : "CMD> "
-**          Project Name                                   : FRDM-KL25Z Master INTRO
+**          Project Name                                   : Freedom DataShield FatFS
 **          Silent Mode Prefix                             : #
+**          Buffer Size                                    : 48
 **          Blocking Send                                  : Enabled
 **            Wait                                         : WAIT1
 **            Timeout (ms)                                 : 20
 **            Wait Time (ms)                               : 10
-**            RTOS Wait                                    : yes
+**            RTOS Wait                                    : no
 **          Status Colon Pos                               : 13
 **          Help Semicolon Pos                             : 26
-**          Multi Command                                  : Enabled
-**            Length                                       : 32
-**            Separator                                    : ;
+**          Multi Command                                  : Disabled
 **          Utility                                        : UTIL1
 **          Default Serial                                 : Enabled
 **            Console Interface                            : AS1
@@ -41,6 +40,7 @@
 **         SendNum16s                   - void CLS1_SendNum16s(int16_t val, CLS1_StdIO_OutErr_FctType io);
 **         SendNum32u                   - void CLS1_SendNum32u(uint32_t val, CLS1_StdIO_OutErr_FctType io);
 **         SendNum32s                   - void CLS1_SendNum32s(int32_t val, CLS1_StdIO_OutErr_FctType io);
+**         SendCh                       - void CLS1_SendCh(uint8_t ch, CLS1_StdIO_OutErr_FctType io);
 **         SendStr                      - void CLS1_SendStr(const uint8_t *str, CLS1_StdIO_OutErr_FctType io);
 **         SendData                     - void CLS1_SendData(const uint8_t *data, uint16_t dataSize,...
 **         PrintStatus                  - uint8_t CLS1_PrintStatus(CLS1_ConstStdIOType *io);
@@ -64,14 +64,32 @@
 **         Init                         - void CLS1_Init(void);
 **         Deinit                       - void CLS1_Deinit(void);
 **
-**     License   :  Open Source (LGPL)
-**     Copyright : (c) Copyright Erich Styger, 2014-2016, all rights reserved.
-**     http      : http://www.mcuoneclipse.com
-**     This an open source software implementing a command line shell with Processor Expert.
-**     This is a free software and is opened for education,  research  and commercial developments under license policy of following terms:
-**     * This is a free software and there is NO WARRANTY.
-**     * No restriction on use. You can use, modify and redistribute it for personal, non-profit or commercial product UNDER YOUR RESPONSIBILITY.
-**     * Redistributions of source code must retain the above copyright notice.
+**     * Copyright (c) 2014-2016, Erich Styger
+**      * Web:         https://mcuoneclipse.com
+**      * SourceForge: https://sourceforge.net/projects/mcuoneclipse
+**      * Git:         https://github.com/ErichStyger/McuOnEclipse_PEx
+**      * All rights reserved.
+**      *
+**      * Redistribution and use in source and binary forms, with or without modification,
+**      * are permitted provided that the following conditions are met:
+**      *
+**      * - Redistributions of source code must retain the above copyright notice, this list
+**      *   of conditions and the following disclaimer.
+**      *
+**      * - Redistributions in binary form must reproduce the above copyright notice, this
+**      *   list of conditions and the following disclaimer in the documentation and/or
+**      *   other materials provided with the distribution.
+**      *
+**      * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+**      * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+**      * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+**      * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+**      * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+**      * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+**      * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+**      * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+**      * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+**      * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ** ###################################################################*/
 /*!
 ** @file CLS1.h
@@ -89,15 +107,14 @@
 #define __CLS1_H
 
 /* MODULE CLS1. */
+#ifndef __HIWARE__
+  #include <stdint.h>
+  #include <stdbool.h>
+#endif
 
-/* Include shared modules, which are used for whole project */
-#include "PE_Types.h"
-#include "PE_Error.h"
-#include "PE_Const.h"
-#include "IO_Map.h"
-
-#include "Cpu.h"
-#include <stddef.h> /* for size_t */
+#ifndef bool
+  #include "PE_Types.h"
+#endif
 
 
 #ifndef __BWUserType_CLS1_StdIO_OutErr_FctType
@@ -139,6 +156,25 @@
 #endif
 
 
+#define CLS1_DEFAULT_SHELL_BUFFER_SIZE  48  /* default buffer size for shell command parsing */
+
+/* Include inherited components */
+#include "WAIT1.h"
+#include "UTIL1.h"
+#include "AS1.h"
+#include "CS1.h"
+#include "KSDK1.h"
+
+#if KSDK1_SDK_VERSION_USED == KSDK1_SDK_VERSION_NONE
+/* Include shared modules, which are used for whole project */
+  #include "PE_Types.h"
+  #include "PE_Error.h"
+  #include "PE_Const.h"
+  #include "IO_Map.h"
+  #include "Cpu.h"
+#endif
+#include <stddef.h> /* for size_t */
+
 /* settings for command line history */
 #define CLS1_HISTORY_ENABLED  0        /* 1: enabled, 0: disabled */
 #define CLS1_NOF_HISTORY      0        /* number of items in history */
@@ -150,19 +186,30 @@
 #define CLS1_SILENT_PREFIX_CHAR_ENABLED (CLS1_SILENT_PREFIX_CHAR != CLS1_NO_SILENT_PREFIX_CHAR)
 
 /* multi command support */
-#define CLS1_MULTI_CMD_ENABLED   1 /* 1: enabled, 0: disabled */
-#define CLS1_MULTI_CMD_SIZE      32 /* max size of each command */
+#define CLS1_MULTI_CMD_ENABLED   0 /* 1: enabled, 0: disabled */
+#define CLS1_MULTI_CMD_SIZE      0 /* max size of each command */
 #define CLS1_MULTI_CMD_CHAR      ';' /* separation character */
 
 /* settings for local echo */
-#define CLS1_ECHO_ENABLED  1           /* 1: enabled, 0: disabled */
+#define CLS1_ECHO_ENABLED  0           /* 1: enabled, 0: disabled */
 
 #define CLS1_DEFAULT_SERIAL  1 /* If set to 1, then the shell implements its own StdIO which is returned by CLS1_GetStdio(); */
+extern uint8_t CLS1_DefaultShellBuffer[CLS1_DEFAULT_SHELL_BUFFER_SIZE]; /* default buffer which can be used by the application */
+
+#if CLS1_DEFAULT_SERIAL
+  extern CLS1_ConstStdIOType CLS1_stdio; /* default standard I/O */
+#endif
+
 
 #define CLS1_DASH_LINE "--------------------------------------------------------------"
 /* predefined commands */
 #define CLS1_CMD_HELP   "help"
 #define CLS1_CMD_STATUS "status"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void CLS1_SendStr(const uint8_t *str, CLS1_StdIO_OutErr_FctType io);
 /*
 ** ===================================================================
@@ -610,7 +657,25 @@ bool CLS1_IsHistoryCharacter(uint8_t ch, uint8_t *cmdBuf, size_t cmdBufIdx, bool
 ** ===================================================================
 */
 
+void CLS1_SendCh(uint8_t ch, CLS1_StdIO_OutErr_FctType io);
+/*
+** ===================================================================
+**     Method      :  CLS1_SendCh (component Shell)
+**     Description :
+**         Prints a character using an I/O function
+**     Parameters  :
+**         NAME            - DESCRIPTION
+**         ch              - Character to send
+**         io              - I/O callbacks to be used for printing.
+**     Returns     : Nothing
+** ===================================================================
+*/
+
 /* END CLS1. */
+
+#ifdef __cplusplus
+}  /* extern "C" */
+#endif
 
 #endif
 /* ifndef __CLS1_H */
