@@ -18,13 +18,15 @@
 #include "FRTOS1.h"
 #include "Shell.h"
 #include "Ultrasonic.h"
+#include "LedControl.h"
+
 
 static void Measure(void) {
   uint16_t us, cm;
   uint8_t buf[8];
 
   us = US_Measure_us();
-  UTIL1_Num16uToStrFormatted(buf, sizeof(buf), us, ' ', 5);
+  //UTIL1_Num16uToStrFormatted(buf, sizeof(buf), us, ' ', 5);
 
   cm = US_usToCentimeters(us, 22);
   UTIL1_Num16uToStrFormatted(buf, sizeof(buf), cm, ' ', 5);
@@ -37,6 +39,7 @@ static portTASK_FUNCTION(Task1, pvParameters) {
 
   for(;;) {
 	Measure();
+	LedShowSmilie();
 	WAIT1_Waitms(1000);
 	BLAU_Neg();
 	FRTOS1_vTaskDelay(1000/portTICK_RATE_MS);
@@ -46,9 +49,12 @@ static portTASK_FUNCTION(Task1, pvParameters) {
 void APP_Run(void){
 	SHELL_Init();
 	US_Init();
+	LedInit();
+
 	ROT_Off();
 	GRUN_Off();
 	BLAU_Off();
+
 	if (FRTOS1_xTaskCreate(
 		Task1,  /* pointer to the task */
 		"Task1", /* task name for kernel awareness debugging */
@@ -63,15 +69,5 @@ void APP_Run(void){
 	}
 	FRTOS1_vTaskStartScheduler();
 
-	for(;;) {
-
-	   Huft_L_SetPos(255);
-	   Huft_R_SetPos(170);
-
-	   Knie_L_SetPos(100);
-	   Knie_R_SetPos(255);
-
-	   Bein_L_SetPos(140);
-	   Bein_R_SetPos(70);
-	}
+	for(;;) {}
 }
