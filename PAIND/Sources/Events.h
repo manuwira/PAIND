@@ -63,11 +63,13 @@
 #include "AS1.h"
 #include "ASerialLdd1.h"
 #include "UTIL1.h"
+#include "SYS1.h"
+#include "RTT1.h"
 #include "CLS1.h"
 #include "Buzzer.h"
 #include "BitIoLdd1.h"
 #include "Switch_A.h"
-#include "BitIoLdd3.h"
+#include "ExtIntLdd2.h"
 #include "ROT.h"
 #include "LEDpin1.h"
 #include "BitIoLdd2.h"
@@ -80,7 +82,7 @@
 #include "ANALOG_IN.h"
 #include "AdcLdd1.h"
 #include "Switch_B.h"
-#include "BitIoLdd6.h"
+#include "ExtIntLdd3.h"
 #include "TRIG.h"
 #include "TMOUT1.h"
 #include "SD1.h"
@@ -269,6 +271,53 @@ void TU3_OnChannel0(LDD_TUserData *UserDataPtr);
 */
 /* ===================================================================*/
 void SM1_OnBlockReceived(LDD_TUserData *UserDataPtr);
+
+/*
+** ===================================================================
+**     Event       :  SM1_OnBlockSent (module Events)
+**
+**     Component   :  SM1 [SPIMaster_LDD]
+*/
+/*!
+**     @brief
+**         This event is called after the last character from the
+**         output buffer is moved to the transmitter. This event is
+**         available only if the SendBlock method is enabled.
+**     @param
+**         UserDataPtr     - Pointer to the user or
+**                           RTOS specific data. The pointer is passed
+**                           as the parameter of Init method. 
+*/
+/* ===================================================================*/
+void SM1_OnBlockSent(LDD_TUserData *UserDataPtr);
+
+void Switch_B_OnInterrupt(void);
+/*
+** ===================================================================
+**     Event       :  Switch_B_OnInterrupt (module Events)
+**
+**     Component   :  Switch_B [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+void Switch_A_OnInterrupt(void);
+/*
+** ===================================================================
+**     Event       :  Switch_A_OnInterrupt (module Events)
+**
+**     Component   :  Switch_A [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
 
 /* END Events */
 

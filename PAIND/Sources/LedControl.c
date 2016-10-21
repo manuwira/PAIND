@@ -1,27 +1,8 @@
 /*
- *    LedControl.cpp - A library for controling Leds with a MAX7219/MAX7221
- *    Copyright (c) 2007 Eberhard Fahle
- * 
- *    Permission is hereby granted, free of charge, to any person
- *    obtaining a copy of this software and associated documentation
- *    files (the "Software"), to deal in the Software without
- *    restriction, including without limitation the rights to use,
- *    copy, modify, merge, publish, distribute, sublicense, and/or sell
- *    copies of the Software, and to permit persons to whom the
- *    Software is furnished to do so, subject to the following
- *    conditions:
- * 
- *    This permission notice shall be included in all copies or 
- *    substantial portions of the Software.
- * 
- *    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- *    EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- *    OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- *    NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- *    HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- *    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- *    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- *    OTHER DEALINGS IN THE SOFTWARE.
+ * LedControl.c
+ *
+ *  Created on: 22.10.2016
+ *      Author: Manuel Felber
  */
  
 
@@ -30,8 +11,9 @@
 #include "PE_Error.h"
 #include "PE_Const.h"
 #include "stdbool.h"
-#include "SM2.h"
+#include "SM1.h"
 #include "SPI_CS.h"
+#include "FRTOS1.h"
 
 //the opcodes for the MAX7221 and MAX7219
 #define OP_NOOP   0
@@ -50,19 +32,20 @@
 #define OP_DISPLAYTEST 15
 
 /*! Device data structure pointer used when auto initialization property is enabled. This constant can be passed as a first parameter to all component's methods. */
-#define SM2_DeviceData  ((LDD_TDeviceData *)PE_LDD_GetDeviceStructure(PE_LDD_COMPONENT_SM2_ID))
+#define SM1_DeviceData  ((LDD_TDeviceData *)PE_LDD_GetDeviceStructure(PE_LDD_COMPONENT_SM1_ID))
 
 const int numDevices = 1;      // number of MAX7219s used
 
-const static char test[8] = {
-	0b00011000,	//6
-	0b01000100,
-	0b10000010,
-	0b10000001,
-	0b10000010,
-	0b10000100,
-	0b01001000,
-	0b00110000};
+const static char eye[8][2] = {
+	{0b00111100, 0b00111100 },
+	{0b01100110, 0b01100110},
+	{0b01000010, 0b01011010},
+	{0b11011011, 0b11011011},
+	{0b11011011, 0b11000011},
+	{0b01000010, 0b01000010},
+	{0b01100110, 0b01100110},
+	{0b00111100, 0b00111100}
+};
 
 const static char sechs[8] = {
 	0b00110000,	//6
@@ -74,23 +57,36 @@ const static char sechs[8] = {
 	0b01110000,
 	0b00000000};
 
-void LedShowSmilie(){
-	int digit = 0;
-	for(int i = 0; i <= 7; i++){
-		spiTransfer(0, digit+1,test[i]);
-		digit++;
-	}
-}
 
-void LedInit(){
+static portTASK_FUNCTION(DotMatrixTask, pvParameters) {
 	LedControl(1);
 	for (int x=0; x<numDevices; x++){
 		shutdown(x,false);       //The MAX72XX is in power-saving mode on startup
 		setIntensity(x,8);       // Set the brightness to default value
 		clearDisplay(x);         // and clear the display
 	}
+	//FRTOS1_vTaskDelay(50/portTICK_RATE_MS);
+	for(;;){
+		for(int i = 0; i < 2;i++) {
+			FRTOS1_vTaskDelay(2000/portTICK_RATE_MS);
+			LedShowSmilie(i);
+		}
+	}
 }
 
+void LedInit(){
+	if (FRTOS1_xTaskCreate(DotMatrixTask, "DotMatrix", configMINIMAL_STACK_SIZE+200, NULL, tskIDLE_PRIORITY, NULL) != pdPASS) {
+	    for(;;){} /* error */
+	}
+}
+
+void LedShowSmilie(int view){
+	int digit = 0;
+	for(int i = 0; i <= 7; i++){
+		spiTransfer(0, digit+1,eye[i][view]);
+		digit++;
+	}
+}
 
 void LedControl(int numDevices) {
     if(numDevices<=0 || numDevices>8 ){
@@ -252,7 +248,7 @@ void spiTransfer(int addr, volatile char opcode, volatile char data) {
     //Now shift out the data 
     for(int i=maxbytes;i>0;i--){
     	//shiftOut(SPI_MOSI,SPI_CLK,MSBFIRST,spidata[i-1]);
-    	SM2_SendBlock(SM2_DeviceData, &spidata[i-1], sizeof(char));
+    	SM1_SendBlock(SM1_DeviceData, &spidata[i-1], sizeof(char));
     }
     //latch the data onto the display
     SPI_CS_SetVal();

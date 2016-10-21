@@ -1,8 +1,8 @@
 /*
  * Application.h
  *
- *  Created on: 29.09.2016
- *      Author: manuelwittmer
+ *  Created on: 22.10.2016
+ *      Author: Manuel Felber
  */
 
 #ifndef SOURCES_APPLICATION_H_
