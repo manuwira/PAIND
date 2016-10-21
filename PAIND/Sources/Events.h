@@ -67,7 +67,7 @@
 #include "Buzzer.h"
 #include "BitIoLdd1.h"
 #include "Switch_A.h"
-#include "BitIoLdd3.h"
+#include "ExtIntLdd2.h"
 #include "ROT.h"
 #include "LEDpin1.h"
 #include "BitIoLdd2.h"
@@ -80,7 +80,7 @@
 #include "ANALOG_IN.h"
 #include "AdcLdd1.h"
 #include "Switch_B.h"
-#include "BitIoLdd6.h"
+#include "ExtIntLdd3.h"
 #include "TRIG.h"
 #include "TMOUT1.h"
 #include "SD1.h"
@@ -111,7 +111,7 @@ extern "C" {
 void Cpu_OnNMIINT(void);
 
 
-void FRTOS1_vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName);
+void FRTOS1_vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName);
 /*
 ** ===================================================================
 **     Event       :  FRTOS1_vApplicationStackOverflowHook (module Events)
@@ -269,6 +269,34 @@ void TU3_OnChannel0(LDD_TUserData *UserDataPtr);
 */
 /* ===================================================================*/
 void SM1_OnBlockReceived(LDD_TUserData *UserDataPtr);
+
+void Switch_A_OnInterrupt(void);
+/*
+** ===================================================================
+**     Event       :  Switch_A_OnInterrupt (module Events)
+**
+**     Component   :  Switch_A [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+
+void Switch_B_OnInterrupt(void);
+/*
+** ===================================================================
+**     Event       :  Switch_B_OnInterrupt (module Events)
+**
+**     Component   :  Switch_B [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
 
 /* END Events */
 

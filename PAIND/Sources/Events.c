@@ -70,7 +70,7 @@ void Cpu_OnNMIINT(void)
 **     Returns     : Nothing
 ** ===================================================================
 */
-void FRTOS1_vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName)
+void FRTOS1_vApplicationStackOverflowHook(xTaskHandle pxTask, char *pcTaskName)
 {
   /* This will get called if a stack overflow is detected during the context
      switch.  Set configCHECK_FOR_STACK_OVERFLOWS to 2 to also check for stack
@@ -161,6 +161,7 @@ void ANALOG_IN_OnEnd(void)
 void ANALOG_IN_OnCalibrationEnd(void)
 {
   /* Write your code here ... */
+
 }
 
 /*
@@ -255,6 +256,40 @@ void TU3_OnChannel0(LDD_TUserData *UserDataPtr)
 void SM1_OnBlockReceived(LDD_TUserData *UserDataPtr)
 {
   /* Write your code here ... */
+}
+
+/*
+** ===================================================================
+**     Event       :  Switch_A_OnInterrupt (module Events)
+**
+**     Component   :  Switch_A [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void Switch_A_OnInterrupt(void)
+{
+	BLAU_Neg();
+}
+
+/*
+** ===================================================================
+**     Event       :  Switch_B_OnInterrupt (module Events)
+**
+**     Component   :  Switch_B [ExtInt]
+**     Description :
+**         This event is called when an active signal edge/level has
+**         occurred.
+**     Parameters  : None
+**     Returns     : Nothing
+** ===================================================================
+*/
+void Switch_B_OnInterrupt(void)
+{
+	GRUN_Neg();
 }
 
 /* END Events */

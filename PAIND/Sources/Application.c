@@ -28,7 +28,7 @@ static portTASK_FUNCTION(Task1, pvParameters) {
 	Measure();
 	LedShowSmilie();
 	WAIT1_Waitms(1000);
-	BLAU_Neg();
+	//BLAU_Neg();
 	FRTOS1_vTaskDelay(1000/portTICK_RATE_MS);
   }
 }
@@ -37,6 +37,7 @@ void APP_Run(void){
 	SHELL_Init();
 	US_Init();
 	LedInit();
+	PINS_Init();
 
 	ROT_Off();
 	GRUN_Off();
