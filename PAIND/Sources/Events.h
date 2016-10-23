@@ -83,6 +83,7 @@
 #include "AdcLdd1.h"
 #include "Switch_B.h"
 #include "ExtIntLdd3.h"
+#include "PTD.h"
 #include "TRIG.h"
 #include "TMOUT1.h"
 #include "SD1.h"
