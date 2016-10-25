@@ -3,7 +3,7 @@
   <Header>
     <Name>PAIND</Name>
     <SavedBy>manuelwittmer</SavedBy>
-    <ModificationStamp>94</ModificationStamp>
+    <ModificationStamp>96</ModificationStamp>
     <Date>2016-09-29</Date>
     <IDE>Eclipse IDE</IDE>
     <PEversion>1.12.2.RT7_b1550-0615</PEversion>
@@ -29,7 +29,7 @@
     <UseExistingModules>true</UseExistingModules>
     <RenamePeripheries>false</RenamePeripheries>
     <Autodependency>true</Autodependency>
-    <ProjectCompNumb>255</ProjectCompNumb>
+    <ProjectCompNumb>277</ProjectCompNumb>
     <DelUnusedPreviouslyGenFiles>true</DelUnusedPreviouslyGenFiles>
     <GeneratedCodeFrozen>false</GeneratedCodeFrozen>
     <AssignInitComponentNameToPrph>true</AssignInitComponentNameToPrph>
@@ -5375,7 +5375,7 @@
                     <List lines_count="0" />
                     <UnitText>ms</UnitText>
                     <MinCounterTicks>0</MinCounterTicks>
-                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset4</ControlledTimingCfgFromPropertySymbol>
+                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset2</ControlledTimingCfgFromPropertySymbol>
                     <ControlledTimingCfgFromComponentRef>LinkedTimerUnit</ControlledTimingCfgFromComponentRef>
                   </ItemState>
                   <ItemState>
@@ -5504,7 +5504,7 @@
                     <ItemSymbol>Config</ItemSymbol>
                     <ReadOnly>false</ReadOnly>
                     <UserReadOnly>false</UserReadOnly>
-                    <Value>4</Value>
+                    <Value>2</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>RefComp</ItemSymbol>
@@ -6634,7 +6634,7 @@
         <ItemSymbol>CompareRegister0</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>TPM0_C2V</Value>
+        <Value>TPM0_C1V</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -6733,7 +6733,7 @@
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
-        <Index>0</Index>
+        <Index>2</Index>
         <Expanded>true</Expanded>
       </ItemState>
       <ItemState>
@@ -6756,7 +6756,7 @@
         <ItemSymbol>ChanOutPin0</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>PTA5/USB_CLKIN/TPM0_CH2</Value>
+        <Value>ADC0_SE11/TSI0_CH15/PTC2/I2C1_SDA/TPM0_CH1</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -6771,7 +6771,7 @@
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
         <Value>false</Value>
-        <Expanded>false</Expanded>
+        <Expanded>true</Expanded>
       </ItemState>
       <ItemState>
         <ItemSymbol>ChannelCmpIntVector0</ItemSymbol>
@@ -6853,7 +6853,7 @@
         <ItemSymbol>CompareRegister1</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>TPM0_C4V</Value>
+        <Value>TPM0_C5V</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -6952,7 +6952,7 @@
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
-        <Index>0</Index>
+        <Index>2</Index>
         <Expanded>true</Expanded>
       </ItemState>
       <ItemState>
@@ -6975,7 +6975,7 @@
         <ItemSymbol>ChanOutPin1</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>PTD4/LLWU_P14/SPI1_PCS0/UART2_RX/TPM0_CH4</Value>
+        <Value>CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7058,7 +7058,7 @@
         <ItemSymbol>Channel2</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Expanded>false</Expanded>
+        <Expanded>true</Expanded>
       </ItemState>
       <ItemState>
         <ItemSymbol>Mode2</ItemSymbol>
@@ -7072,7 +7072,7 @@
         <ItemSymbol>CompareRegister2</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>TPM0_C1V</Value>
+        <Value>TPM0_C0V</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7171,7 +7171,7 @@
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
-        <Index>2</Index>
+        <Index>0</Index>
         <Expanded>true</Expanded>
       </ItemState>
       <ItemState>
@@ -7194,7 +7194,7 @@
         <ItemSymbol>ChanOutPin2</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>ADC0_SE11/TSI0_CH15/PTC2/I2C1_SDA/TPM0_CH1</Value>
+        <Value>PTD0/SPI0_PCS0/TPM0_CH0</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7209,7 +7209,7 @@
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
         <Value>false</Value>
-        <Expanded>true</Expanded>
+        <Expanded>false</Expanded>
       </ItemState>
       <ItemState>
         <ItemSymbol>ChannelCmpIntVector2</ItemSymbol>
@@ -7277,7 +7277,7 @@
         <ItemSymbol>Channel3</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Expanded>false</Expanded>
+        <Expanded>true</Expanded>
       </ItemState>
       <ItemState>
         <ItemSymbol>Mode3</ItemSymbol>
@@ -7291,7 +7291,7 @@
         <ItemSymbol>CompareRegister3</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>TPM0_C5V</Value>
+        <Value>TPM0_C3V</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7390,7 +7390,7 @@
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
         <PropertyModelIsAutomatic>false</PropertyModelIsAutomatic>
-        <Index>2</Index>
+        <Index>0</Index>
         <Expanded>true</Expanded>
       </ItemState>
       <ItemState>
@@ -7413,7 +7413,7 @@
         <ItemSymbol>ChanOutPin3</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>CMP0_IN3/PTC9/I2C0_SDA/TPM0_CH5</Value>
+        <Value>PTD3/SPI0_MISO/UART2_TX/TPM0_CH3/SPI0_MOSI</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7510,7 +7510,7 @@
         <ItemSymbol>CompareRegister4</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>TPM0_C0V</Value>
+        <Value>TPM0_C2V</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7632,7 +7632,7 @@
         <ItemSymbol>ChanOutPin4</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>PTD0/SPI0_PCS0/TPM0_CH0</Value>
+        <Value>PTA5/USB_CLKIN/TPM0_CH2</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7729,7 +7729,7 @@
         <ItemSymbol>CompareRegister5</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>TPM0_C3V</Value>
+        <Value>TPM0_C4V</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -7851,7 +7851,7 @@
         <ItemSymbol>ChanOutPin5</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>PTD3/SPI0_MISO/UART2_TX/TPM0_CH3/SPI0_MOSI</Value>
+        <Value>PTD4/LLWU_P14/SPI1_PCS0/UART2_RX/TPM0_CH4</Value>
         <SharedPrphMode>false</SharedPrphMode>
       </ItemState>
       <ItemState>
@@ -9227,7 +9227,7 @@
                     <List lines_count="0" />
                     <UnitText>ms</UnitText>
                     <MinCounterTicks>0</MinCounterTicks>
-                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset5</ControlledTimingCfgFromPropertySymbol>
+                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset3</ControlledTimingCfgFromPropertySymbol>
                     <ControlledTimingCfgFromComponentRef>LinkedTimerUnit</ControlledTimingCfgFromComponentRef>
                   </ItemState>
                   <ItemState>
@@ -9356,7 +9356,7 @@
                     <ItemSymbol>Config</ItemSymbol>
                     <ReadOnly>false</ReadOnly>
                     <UserReadOnly>false</UserReadOnly>
-                    <Value>5</Value>
+                    <Value>3</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>RefComp</ItemSymbol>
@@ -10837,7 +10837,7 @@
                     <List lines_count="0" />
                     <UnitText>ms</UnitText>
                     <MinCounterTicks>0</MinCounterTicks>
-                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset0</ControlledTimingCfgFromPropertySymbol>
+                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset4</ControlledTimingCfgFromPropertySymbol>
                     <ControlledTimingCfgFromComponentRef>LinkedTimerUnit</ControlledTimingCfgFromComponentRef>
                   </ItemState>
                   <ItemState>
@@ -10966,7 +10966,7 @@
                     <ItemSymbol>Config</ItemSymbol>
                     <ReadOnly>false</ReadOnly>
                     <UserReadOnly>false</UserReadOnly>
-                    <Value>0</Value>
+                    <Value>4</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>RefComp</ItemSymbol>
@@ -12447,7 +12447,7 @@
                     <List lines_count="0" />
                     <UnitText>ms</UnitText>
                     <MinCounterTicks>0</MinCounterTicks>
-                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset1</ControlledTimingCfgFromPropertySymbol>
+                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset5</ControlledTimingCfgFromPropertySymbol>
                     <ControlledTimingCfgFromComponentRef>LinkedTimerUnit</ControlledTimingCfgFromComponentRef>
                   </ItemState>
                   <ItemState>
@@ -12576,7 +12576,7 @@
                     <ItemSymbol>Config</ItemSymbol>
                     <ReadOnly>false</ReadOnly>
                     <UserReadOnly>false</UserReadOnly>
-                    <Value>1</Value>
+                    <Value>5</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>RefComp</ItemSymbol>
@@ -14256,7 +14256,7 @@
                     <List lines_count="0" />
                     <UnitText>ms</UnitText>
                     <MinCounterTicks>0</MinCounterTicks>
-                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset2</ControlledTimingCfgFromPropertySymbol>
+                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset0</ControlledTimingCfgFromPropertySymbol>
                     <ControlledTimingCfgFromComponentRef>LinkedTimerUnit</ControlledTimingCfgFromComponentRef>
                   </ItemState>
                   <ItemState>
@@ -14385,7 +14385,7 @@
                     <ItemSymbol>Config</ItemSymbol>
                     <ReadOnly>false</ReadOnly>
                     <UserReadOnly>false</UserReadOnly>
-                    <Value>2</Value>
+                    <Value>0</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>RefComp</ItemSymbol>
@@ -15866,7 +15866,7 @@
                     <List lines_count="0" />
                     <UnitText>ms</UnitText>
                     <MinCounterTicks>0</MinCounterTicks>
-                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset3</ControlledTimingCfgFromPropertySymbol>
+                    <ControlledTimingCfgFromPropertySymbol>Tmg_ChanOffset1</ControlledTimingCfgFromPropertySymbol>
                     <ControlledTimingCfgFromComponentRef>LinkedTimerUnit</ControlledTimingCfgFromComponentRef>
                   </ItemState>
                   <ItemState>
@@ -15995,7 +15995,7 @@
                     <ItemSymbol>Config</ItemSymbol>
                     <ReadOnly>false</ReadOnly>
                     <UserReadOnly>false</UserReadOnly>
-                    <Value>3</Value>
+                    <Value>1</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>RefComp</ItemSymbol>
@@ -21173,7 +21173,7 @@
           <ComponentUUID>com.freescale.processorexpert.bitio</ComponentUUID>
           <BeanType>BitIO</BeanType>
           <Name>LEDpin1</Name>
-          <CompNumb>195</CompNumb>
+          <CompNumb>259</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>BITIO</IconName>
@@ -21219,7 +21219,7 @@
                 <ComponentUUID>com.freescale.processorexpert.ldd.bitio_ldd</ComponentUUID>
                 <BeanType>BitIO_LDD</BeanType>
                 <Name>BitIoLdd2</Name>
-                <CompNumb>196</CompNumb>
+                <CompNumb>260</CompNumb>
                 <CompEnabled>true</CompEnabled>
                 <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
                 <IconName>PORT_LDD</IconName>
@@ -21967,7 +21967,7 @@
           <ComponentUUID>com.freescale.processorexpert.bitio</ComponentUUID>
           <BeanType>BitIO</BeanType>
           <Name>LEDpin2</Name>
-          <CompNumb>197</CompNumb>
+          <CompNumb>261</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>BITIO</IconName>
@@ -22012,8 +22012,8 @@
                 <Repository>file:/${ProcessorExpert_loc}/Repositories/Kinetis_Repository</Repository>
                 <ComponentUUID>com.freescale.processorexpert.ldd.bitio_ldd</ComponentUUID>
                 <BeanType>BitIO_LDD</BeanType>
-                <Name>BitIoLdd4</Name>
-                <CompNumb>198</CompNumb>
+                <Name>BitIoLdd3</Name>
+                <CompNumb>262</CompNumb>
                 <CompEnabled>true</CompEnabled>
                 <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
                 <IconName>PORT_LDD</IconName>
@@ -22027,7 +22027,7 @@
                     <ItemSymbol>DeviceName</ItemSymbol>
                     <ReadOnly>true</ReadOnly>
                     <UserReadOnly>true</UserReadOnly>
-                    <Value>BitIoLdd4</Value>
+                    <Value>BitIoLdd3</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>_Pin</ItemSymbol>
@@ -22761,7 +22761,7 @@
           <ComponentUUID>com.freescale.processorexpert.bitio</ComponentUUID>
           <BeanType>BitIO</BeanType>
           <Name>LEDpin3</Name>
-          <CompNumb>199</CompNumb>
+          <CompNumb>263</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>BITIO</IconName>
@@ -22806,8 +22806,8 @@
                 <Repository>file:/${ProcessorExpert_loc}/Repositories/Kinetis_Repository</Repository>
                 <ComponentUUID>com.freescale.processorexpert.ldd.bitio_ldd</ComponentUUID>
                 <BeanType>BitIO_LDD</BeanType>
-                <Name>BitIoLdd5</Name>
-                <CompNumb>200</CompNumb>
+                <Name>BitIoLdd4</Name>
+                <CompNumb>264</CompNumb>
                 <CompEnabled>true</CompEnabled>
                 <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
                 <IconName>PORT_LDD</IconName>
@@ -22821,7 +22821,7 @@
                     <ItemSymbol>DeviceName</ItemSymbol>
                     <ReadOnly>true</ReadOnly>
                     <UserReadOnly>true</UserReadOnly>
-                    <Value>BitIoLdd5</Value>
+                    <Value>BitIoLdd4</Value>
                   </ItemState>
                   <ItemState>
                     <ItemSymbol>_Pin</ItemSymbol>
@@ -26942,7 +26942,7 @@
           <ComponentUUID>com.freescale.processorexpert.bitio</ComponentUUID>
           <BeanType>BitIO</BeanType>
           <Name>CE1</Name>
-          <CompNumb>201</CompNumb>
+          <CompNumb>265</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>BITIO</IconName>
@@ -27537,7 +27537,7 @@
           <ComponentUUID>com.freescale.processorexpert.bitio</ComponentUUID>
           <BeanType>BitIO</BeanType>
           <Name>CSN1</Name>
-          <CompNumb>203</CompNumb>
+          <CompNumb>267</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>BITIO</IconName>
@@ -28190,7 +28190,7 @@
           <ComponentUUID>com.freescale.processorexpert.extint</ComponentUUID>
           <BeanType>ExtInt</BeanType>
           <Name>IRQ1</Name>
-          <CompNumb>205</CompNumb>
+          <CompNumb>269</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>EXTINT</IconName>
@@ -33237,7 +33237,7 @@
         <ItemSymbol>ChanCapInpPinSignal0</ItemSymbol>
         <ReadOnly>false</ReadOnly>
         <UserReadOnly>false</UserReadOnly>
-        <Value>US_Echo_D2</Value>
+        <Value>US_Echo</Value>
       </ItemState>
       <ItemState>
         <ItemSymbol>ChanCapEdge0</ItemSymbol>
@@ -35310,7 +35310,7 @@
           <ComponentUUID>com.freescale.processorexpert.ldd.bitio_ldd</ComponentUUID>
           <BeanType>BitIO_LDD</BeanType>
           <Name>SS1</Name>
-          <CompNumb>207</CompNumb>
+          <CompNumb>271</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>PORT_LDD</IconName>
@@ -35716,7 +35716,7 @@
           <ComponentUUID>com.freescale.processorexpert.ldd.bitio_ldd</ComponentUUID>
           <BeanType>BitIO_LDD</BeanType>
           <Name>CD1</Name>
-          <CompNumb>208</CompNumb>
+          <CompNumb>272</CompNumb>
           <CompEnabled>true</CompEnabled>
           <GenCodeMode>ALWAYS_WRITE</GenCodeMode>
           <IconName>PORT_LDD</IconName>
